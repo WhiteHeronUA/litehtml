@@ -1,5 +1,5 @@
-#include "html.h"
-#include "el_break.h"
+#include "../include/litehtml/html.h"
+#include "../include/litehtml/el_break.h"
 
 litehtml::el_break::el_break(const std::shared_ptr<litehtml::document>& doc) : html_tag(doc)
 {
@@ -8,6 +8,6 @@ litehtml::el_break::el_break(const std::shared_ptr<litehtml::document>& doc) : h
 
 bool litehtml::el_break::is_break() const
 {
-	return true;
+    return true;
 }
 

@@ -14,18 +14,18 @@
 //
 // Author: jdtang@google.com (Jonathan Tang)
 
-#include "utf8.h"
+#include "include/gumbo/utf8.h"
 
 #include <assert.h>
 #include <stdint.h>
 #include <string.h>
 #include <strings.h>  // For strncasecmp.
 
-#include "error.h"
-#include "gumbo.h"
-#include "parser.h"
-#include "util.h"
-#include "vector.h"
+#include "include/gumbo/error.h"
+#include "include/gumbo.h"
+#include "include/gumbo/parser.h"
+#include "include/gumbo/util.h"
+#include "include/gumbo/vector.h"
 
 const int kUtf8ReplacementChar = 0xFFFD;
 

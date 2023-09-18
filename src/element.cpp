@@ -1,11 +1,11 @@
-#include "html.h"
-#include "element.h"
-#include "document.h"
-#include "render_item.h"
-#include "render_flex.h"
-#include "render_inline.h"
-#include "render_table.h"
-#include "el_before_after.h"
+#include "../include/litehtml/html.h"
+#include "../include/litehtml/element.h"
+#include "../include/litehtml/document.h"
+#include "../include/litehtml/render_item.h"
+#include "../include/litehtml/render_flex.h"
+#include "../include/litehtml/render_inline.h"
+#include "../include/litehtml/render_table.h"
+#include "../include/litehtml/el_before_after.h"
 
 namespace litehtml
 {
@@ -19,273 +19,273 @@ element::element(const document::ptr& doc) : m_doc(doc)
 
 position element::get_placement() const
 {
-	position pos;
-	bool is_first = true;
-	for(const auto& ri_el : m_renders)
-	{
-		auto ri = ri_el.lock();
-		if(ri)
-		{
-			position ri_pos = ri_el.lock()->get_placement();
-			if(is_first)
-			{
-				is_first = false;
-				pos = ri_pos;
-			} else
-			{
-				if(pos.x < ri_pos.x)
-				{
-					pos.x = ri_pos.x;
-				}
-				if(pos.y < ri_pos.y)
-				{
-					pos.y = ri_pos.y;
-				}
-			}
-		}
-	}
-	return pos;
+    position pos;
+    bool is_first = true;
+    for(const auto& ri_el : m_renders)
+    {
+        auto ri = ri_el.lock();
+        if(ri)
+        {
+            position ri_pos = ri_el.lock()->get_placement();
+            if(is_first)
+            {
+                is_first = false;
+                pos = ri_pos;
+            } else
+            {
+                if(pos.x < ri_pos.x)
+                {
+                    pos.x = ri_pos.x;
+                }
+                if(pos.y < ri_pos.y)
+                {
+                    pos.y = ri_pos.y;
+                }
+            }
+        }
+    }
+    return pos;
 }
 
 bool element::is_inline() const
 {
-	if(	css().get_display() == display_inline ||
-		   css().get_display() == display_inline_table ||
-		   css().get_display() == display_inline_block ||
-		   css().get_display() == display_inline_text ||
-		   css().get_display() == display_inline_flex)
-	{
-		return true;
-	}
-	return false;
+    if(	css().get_display() == display_inline ||
+           css().get_display() == display_inline_table ||
+           css().get_display() == display_inline_block ||
+           css().get_display() == display_inline_text ||
+           css().get_display() == display_inline_flex)
+    {
+        return true;
+    }
+    return false;
 }
 
 bool element::is_inline_box() const
 {
-	if(	css().get_display() == display_inline_table ||
-		   css().get_display() == display_inline_block ||
-		   css().get_display() == display_inline_flex)
-	{
-		return true;
-	}
-	return false;
+    if(	css().get_display() == display_inline_table ||
+           css().get_display() == display_inline_block ||
+           css().get_display() == display_inline_flex)
+    {
+        return true;
+    }
+    return false;
 }
 
 bool element::is_ancestor(const ptr &el) const
 {
-	element::ptr el_parent = parent();
-	while(el_parent && el_parent != el)
-	{
-		el_parent = el_parent->parent();
-	}
-	if(el_parent)
-	{
-		return true;
-	}
-	return false;
+    element::ptr el_parent = parent();
+    while(el_parent && el_parent != el)
+    {
+        el_parent = el_parent->parent();
+    }
+    if(el_parent)
+    {
+        return true;
+    }
+    return false;
 }
 
 bool element::is_table_skip() const
 {
-	return is_space() || is_comment() || css().get_display() == display_none;
+    return is_space() || is_comment() || css().get_display() == display_none;
 }
 
 string element::dump_get_name()
 {
-	return "element";
+    return "element";
 }
 
 std::vector<std::tuple<string, string>> element::dump_get_attrs()
 {
-	return m_css.dump_get_attrs();
+    return m_css.dump_get_attrs();
 }
 
 void element::dump(dumper& cout)
 {
-	cout.begin_node(dump_get_name());
+    cout.begin_node(dump_get_name());
 
-	auto attrs = dump_get_attrs();
-	if(!attrs.empty())
-	{
-		cout.begin_attrs_group("attributes");
-		for (const auto &attr: attrs)
-		{
-			cout.add_attr(std::get<0>(attr), std::get<1>(attr));
-		}
-		cout.end_attrs_group();
-	}
+    auto attrs = dump_get_attrs();
+    if(!attrs.empty())
+    {
+        cout.begin_attrs_group("attributes");
+        for (const auto &attr: attrs)
+        {
+            cout.add_attr(std::get<0>(attr), std::get<1>(attr));
+        }
+        cout.end_attrs_group();
+    }
 
-	if(!m_children.empty())
-	{
-		cout.begin_attrs_group("children");
-		for (const auto &el: m_children)
-		{
-			el->dump(cout);
-		}
-		cout.end_attrs_group();
-	}
+    if(!m_children.empty())
+    {
+        cout.begin_attrs_group("children");
+        for (const auto &el: m_children)
+        {
+            el->dump(cout);
+        }
+        cout.end_attrs_group();
+    }
 
-	cout.end_node();
+    cout.end_node();
 }
 
 std::shared_ptr<render_item> element::create_render_item(const std::shared_ptr<render_item>& parent_ri)
 {
-	std::shared_ptr<render_item> ret;
+    std::shared_ptr<render_item> ret;
 
-	if(css().get_display() == display_table_column ||
-	   css().get_display() == display_table_column_group ||
-	   css().get_display() == display_table_footer_group ||
-	   css().get_display() == display_table_header_group ||
-	   css().get_display() == display_table_row_group)
-	{
-		ret = std::make_shared<render_item_table_part>(shared_from_this());
-	} else if(css().get_display() == display_table_row)
-	{
-		ret = std::make_shared<render_item_table_row>(shared_from_this());
-	} else if(css().get_display() == display_block ||
-				css().get_display() == display_table_cell ||
-				css().get_display() == display_table_caption ||
-				css().get_display() == display_list_item ||
-				css().get_display() == display_inline_block)
-	{
-		ret = std::make_shared<render_item_block>(shared_from_this());
-	} else if(css().get_display() == display_table || css().get_display() == display_inline_table)
-	{
-		ret = std::make_shared<render_item_table>(shared_from_this());
-	} else if(css().get_display() == display_inline || css().get_display() == display_inline_text)
-	{
-		ret = std::make_shared<render_item_inline>(shared_from_this());
-	} else if(css().get_display() == display_flex || css().get_display() == display_inline_flex)
-	{
-		ret = std::make_shared<render_item_flex>(shared_from_this());
-	}
-	if(ret)
-	{
-		if (css().get_display() == display_table ||
-			css().get_display() == display_inline_table ||
-			css().get_display() == display_table_caption ||
-			css().get_display() == display_table_cell ||
-			css().get_display() == display_table_column ||
-			css().get_display() == display_table_column_group ||
-			css().get_display() == display_table_footer_group ||
-			css().get_display() == display_table_header_group ||
-			css().get_display() == display_table_row ||
-			css().get_display() == display_table_row_group)
-		{
-			get_document()->add_tabular(ret);
-		}
+    if(css().get_display() == display_table_column ||
+       css().get_display() == display_table_column_group ||
+       css().get_display() == display_table_footer_group ||
+       css().get_display() == display_table_header_group ||
+       css().get_display() == display_table_row_group)
+    {
+        ret = std::make_shared<render_item_table_part>(shared_from_this());
+    } else if(css().get_display() == display_table_row)
+    {
+        ret = std::make_shared<render_item_table_row>(shared_from_this());
+    } else if(css().get_display() == display_block ||
+                css().get_display() == display_table_cell ||
+                css().get_display() == display_table_caption ||
+                css().get_display() == display_list_item ||
+                css().get_display() == display_inline_block)
+    {
+        ret = std::make_shared<render_item_block>(shared_from_this());
+    } else if(css().get_display() == display_table || css().get_display() == display_inline_table)
+    {
+        ret = std::make_shared<render_item_table>(shared_from_this());
+    } else if(css().get_display() == display_inline || css().get_display() == display_inline_text)
+    {
+        ret = std::make_shared<render_item_inline>(shared_from_this());
+    } else if(css().get_display() == display_flex || css().get_display() == display_inline_flex)
+    {
+        ret = std::make_shared<render_item_flex>(shared_from_this());
+    }
+    if(ret)
+    {
+        if (css().get_display() == display_table ||
+            css().get_display() == display_inline_table ||
+            css().get_display() == display_table_caption ||
+            css().get_display() == display_table_cell ||
+            css().get_display() == display_table_column ||
+            css().get_display() == display_table_column_group ||
+            css().get_display() == display_table_footer_group ||
+            css().get_display() == display_table_header_group ||
+            css().get_display() == display_table_row ||
+            css().get_display() == display_table_row_group)
+        {
+            get_document()->add_tabular(ret);
+        }
 
-		ret->parent(parent_ri);
-		for(const auto& el : m_children)
-		{
-			auto ri = el->create_render_item(ret);
-			if(ri)
-			{
-				ret->add_child(ri);
-			}
-		}
-	}
-	return ret;
+        ret->parent(parent_ri);
+        for(const auto& el : m_children)
+        {
+            auto ri = el->create_render_item(ret);
+            if(ri)
+            {
+                ret->add_child(ri);
+            }
+        }
+    }
+    return ret;
 }
 
 bool element::requires_styles_update()
 {
-	for (const auto& used_style : m_used_styles)
-	{
-		if(used_style->m_selector->is_media_valid())
-		{
-			int res = select(*(used_style->m_selector), true);
-			if( (res == select_no_match && used_style->m_used) || (res == select_match && !used_style->m_used) )
-			{
-				return true;
-			}
-		}
-	}
-	return false;
+    for (const auto& used_style : m_used_styles)
+    {
+        if(used_style->m_selector->is_media_valid())
+        {
+            int res = select(*(used_style->m_selector), true);
+            if( (res == select_no_match && used_style->m_used) || (res == select_match && !used_style->m_used) )
+            {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 void element::add_render(const std::shared_ptr<render_item>& ri)
 {
-	m_renders.push_back(ri);
+    m_renders.push_back(ri);
 }
 
 bool element::find_styles_changes( position::vector& redraw_boxes)
 {
-	if(css().get_display() == display_inline_text)
-	{
-		return false;
-	}
+    if(css().get_display() == display_inline_text)
+    {
+        return false;
+    }
 
-	bool ret = false;
+    bool ret = false;
 
-	if(requires_styles_update())
-	{
-		auto fetch_boxes = [&](const std::shared_ptr<element>& el)
-			{
-				for(const auto& weak_ri : el->m_renders)
-				{
-					auto ri = weak_ri.lock();
-					if(ri)
-					{
-						position::vector boxes;
-						ri->get_rendering_boxes(boxes);
-						for (auto &box: boxes)
-						{
-							redraw_boxes.push_back(box);
-						}
-					}
-				}
-			};
-		fetch_boxes(shared_from_this());
-		for (auto& el : m_children)
-		{
-			fetch_boxes(el);
-		}
+    if(requires_styles_update())
+    {
+        auto fetch_boxes = [&](const std::shared_ptr<element>& el)
+            {
+                for(const auto& weak_ri : el->m_renders)
+                {
+                    auto ri = weak_ri.lock();
+                    if(ri)
+                    {
+                        position::vector boxes;
+                        ri->get_rendering_boxes(boxes);
+                        for (auto &box: boxes)
+                        {
+                            redraw_boxes.push_back(box);
+                        }
+                    }
+                }
+            };
+        fetch_boxes(shared_from_this());
+        for (auto& el : m_children)
+        {
+            fetch_boxes(el);
+        }
 
-		refresh_styles();
-		compute_styles();
-		ret = true;
-	}
-	for (auto& el : m_children)
-	{
-		if(el->find_styles_changes(redraw_boxes))
-		{
-			ret = true;
-		}
-	}
-	return ret;
+        refresh_styles();
+        compute_styles();
+        ret = true;
+    }
+    for (auto& el : m_children)
+    {
+        if(el->find_styles_changes(redraw_boxes))
+        {
+            ret = true;
+        }
+    }
+    return ret;
 }
 
 element::ptr element::_add_before_after(int type, const style& style)
 {
-	element::ptr el;
-	if(type == 0)
-	{
-		el = std::make_shared<el_before>(get_document());
-		m_children.insert(m_children.begin(), el);
-	} else
-	{
-		el = std::make_shared<el_after>(get_document());
-		m_children.insert(m_children.end(), el);
-	}
-	el->parent(shared_from_this());
-	return el;
+    element::ptr el;
+    if(type == 0)
+    {
+        el = std::make_shared<el_before>(get_document());
+        m_children.insert(m_children.begin(), el);
+    } else
+    {
+        el = std::make_shared<el_after>(get_document());
+        m_children.insert(m_children.end(), el);
+    }
+    el->parent(shared_from_this());
+    return el;
 }
 
 bool element::is_block_formatting_context() const
 {
-	if(	m_css.get_display() == display_inline_block ||
-		   m_css.get_display() == display_table_cell ||
-		   m_css.get_display() == display_table_caption ||
-		   is_root() ||
-		   m_css.get_float() != float_none ||
-		   m_css.get_position() == element_position_absolute ||
-		   m_css.get_position() == element_position_fixed ||
-		   m_css.get_overflow() > overflow_visible)
-	{
-		return true;
-	}
-	return false;
+    if(	m_css.get_display() == display_inline_block ||
+           m_css.get_display() == display_table_cell ||
+           m_css.get_display() == display_table_caption ||
+           is_root() ||
+           m_css.get_float() != float_none ||
+           m_css.get_position() == element_position_absolute ||
+           m_css.get_position() == element_position_fixed ||
+           m_css.get_overflow() > overflow_visible)
+    {
+        return true;
+    }
+    return false;
 }
 
 const background* element::get_background(bool own_only)						LITEHTML_RETURN_FUNC(nullptr)

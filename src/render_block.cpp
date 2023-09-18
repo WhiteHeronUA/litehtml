@@ -1,36 +1,36 @@
-#include "html.h"
-#include "render_block.h"
-#include "render_inline_context.h"
-#include "render_block_context.h"
-#include "document.h"
+#include "../include/litehtml/html.h"
+#include "../include/litehtml/render_block.h"
+#include "../include/litehtml/render_inline_context.h"
+#include "../include/litehtml/render_block_context.h"
+#include "../include/litehtml/document.h"
 
 int litehtml::render_item_block::place_float(const std::shared_ptr<render_item> &el, int top, const containing_block_context &self_size, formatting_context* fmt_ctx)
 {
     int line_top	= fmt_ctx->get_cleared_top(el, top);
     int line_left	= 0;
     int line_right	= self_size.render_width;
-	fmt_ctx->get_line_left_right(line_top, self_size.render_width, line_left, line_right);
+    fmt_ctx->get_line_left_right(line_top, self_size.render_width, line_left, line_right);
 
     int ret_width = 0;
 
-	int min_rendered_width = el->render(line_left, line_top, self_size.new_width(line_right), fmt_ctx);
-	if(min_rendered_width < el->width() && el->src_el()->css().get_width().is_predefined())
-	{
-		el->render(line_left, line_top, self_size.new_width(min_rendered_width), fmt_ctx);
-	}
+    int min_rendered_width = el->render(line_left, line_top, self_size.new_width(line_right), fmt_ctx);
+    if(min_rendered_width < el->width() && el->src_el()->css().get_width().is_predefined())
+    {
+        el->render(line_left, line_top, self_size.new_width(min_rendered_width), fmt_ctx);
+    }
 
     if (el->src_el()->css().get_float() == float_left)
     {
         if(el->right() > line_right)
         {
-			line_top = fmt_ctx->find_next_line_top(el->top(), el->width(), self_size.render_width);
+            line_top = fmt_ctx->find_next_line_top(el->top(), el->width(), self_size.render_width);
             el->pos().x = fmt_ctx->get_line_left(line_top) + el->content_offset_left();
             el->pos().y = line_top + el->content_offset_top();
         }
-		fmt_ctx->add_float(el, min_rendered_width, self_size.context_idx);
-		fix_line_width(float_left, self_size, fmt_ctx);
+        fmt_ctx->add_float(el, min_rendered_width, self_size.context_idx);
+        fix_line_width(float_left, self_size, fmt_ctx);
 
-		ret_width = fmt_ctx->find_min_left(line_top, self_size.context_idx);
+        ret_width = fmt_ctx->find_min_left(line_top, self_size.context_idx);
     } else if (el->src_el()->css().get_float() == float_right)
     {
         if(line_left + el->width() > line_right)
@@ -42,10 +42,10 @@ int litehtml::render_item_block::place_float(const std::shared_ptr<render_item> 
         {
             el->pos().x = line_right - el->width() + el->content_offset_left();
         }
-		fmt_ctx->add_float(el, min_rendered_width, self_size.context_idx);
-		fix_line_width(float_right, self_size, fmt_ctx);
-		line_right = fmt_ctx->find_min_right(line_top, self_size.render_width, self_size.context_idx);
-		ret_width = self_size.render_width - line_right;
+        fmt_ctx->add_float(el, min_rendered_width, self_size.context_idx);
+        fix_line_width(float_right, self_size, fmt_ctx);
+        line_right = fmt_ctx->find_min_right(line_top, self_size.render_width, self_size.context_idx);
+        ret_width = self_size.render_width - line_right;
     }
     return ret_width;
 }
@@ -69,7 +69,7 @@ std::shared_ptr<litehtml::render_item> litehtml::render_item_block::init()
         if (auto p = src_el()->parent())
         {
             int val = atoi(p->get_attr("start", "1"));
-			for(const auto &child : p->children())
+            for(const auto &child : p->children())
             {
                 if (child == src_el())
                 {
@@ -106,20 +106,20 @@ std::shared_ptr<litehtml::render_item> litehtml::render_item_block::init()
     }
 
     bool has_block_level = false;
-	bool has_inlines = false;
-	bool has_floats = false;
+    bool has_inlines = false;
+    bool has_floats = false;
     for (const auto& el : m_children)
     {
-		if(!el->src_el()->is_float())
-		{
-			if (el->src_el()->is_block_box())
-			{
-				has_block_level = true;
-			} else if (el->src_el()->is_inline())
-			{
-				has_inlines = true;
-			}
-		}
+        if(!el->src_el()->is_float())
+        {
+            if (el->src_el()->is_block_box())
+            {
+                has_block_level = true;
+            } else if (el->src_el()->is_inline())
+            {
+                has_inlines = true;
+            }
+        }
         if(has_block_level && has_inlines)
             break;
     }
@@ -197,76 +197,76 @@ std::shared_ptr<litehtml::render_item> litehtml::render_item_block::init()
 
 int litehtml::render_item_block::_render(int x, int y, const containing_block_context &containing_block_size, formatting_context* fmt_ctx, bool second_pass)
 {
-	containing_block_context self_size = calculate_containing_block_context(containing_block_size);
+    containing_block_context self_size = calculate_containing_block_context(containing_block_size);
 
     //*****************************************
     // Render content
     //*****************************************
-	int ret_width = _render_content(x, y, second_pass, self_size, fmt_ctx);
+    int ret_width = _render_content(x, y, second_pass, self_size, fmt_ctx);
     //*****************************************
 
-	bool requires_rerender = false;		// when true, the second pass for content rendering is required
+    bool requires_rerender = false;		// when true, the second pass for content rendering is required
 
-	// Set block width
-	if(self_size.width.type == containing_block_context::cbc_value_type_absolute)
-	{
-		ret_width = m_pos.width = self_size.render_width;
-	} else if(self_size.width.type == containing_block_context::cbc_value_type_percentage)
-	{
-		m_pos.width = self_size.render_width;
-	} else
-	{
-		m_pos.width = self_size.render_width;
-	}
-
-	// Fix width with min-width attribute
-	if(self_size.min_width.type != containing_block_context::cbc_value_type_none)
-	{
-		if(m_pos.width < self_size.min_width)
-		{
-			m_pos.width = self_size.min_width;
-			requires_rerender = true;
-		}
-	}
-
-	// Fix width with max-width attribute
-	if(self_size.max_width.type != containing_block_context::cbc_value_type_none)
-	{
-		if(m_pos.width > self_size.max_width)
-		{
-			m_pos.width = self_size.max_width;
-			requires_rerender = true;
-		}
-	}
-
-	// re-render content with new width if required
-	if (requires_rerender && !second_pass && !is_root())
-	{
-		if(src_el()->is_block_formatting_context())
-		{
-			fmt_ctx->clear_floats(-1);
-		} else
-		{
-			fmt_ctx->clear_floats(self_size.context_idx);
-		}
-
-		_render_content(x, y, true, self_size.new_width(m_pos.width), fmt_ctx);
-	}
-
-	// Set block height
-	if (self_size.height.type != containing_block_context::cbc_value_type_auto)
-	{
-		if(self_size.height > 0)
-		{
-			m_pos.height = self_size.height;
-		}
-		if(src_el()->css().get_box_sizing() == box_sizing_border_box)
-		{
-			m_pos.height -= box_sizing_height();
-		}
-	} else if (src_el()->is_block_formatting_context())
+    // Set block width
+    if(self_size.width.type == containing_block_context::cbc_value_type_absolute)
     {
-		// add the floats' height to the block height
+        ret_width = m_pos.width = self_size.render_width;
+    } else if(self_size.width.type == containing_block_context::cbc_value_type_percentage)
+    {
+        m_pos.width = self_size.render_width;
+    } else
+    {
+        m_pos.width = self_size.render_width;
+    }
+
+    // Fix width with min-width attribute
+    if(self_size.min_width.type != containing_block_context::cbc_value_type_none)
+    {
+        if(m_pos.width < self_size.min_width)
+        {
+            m_pos.width = self_size.min_width;
+            requires_rerender = true;
+        }
+    }
+
+    // Fix width with max-width attribute
+    if(self_size.max_width.type != containing_block_context::cbc_value_type_none)
+    {
+        if(m_pos.width > self_size.max_width)
+        {
+            m_pos.width = self_size.max_width;
+            requires_rerender = true;
+        }
+    }
+
+    // re-render content with new width if required
+    if (requires_rerender && !second_pass && !is_root())
+    {
+        if(src_el()->is_block_formatting_context())
+        {
+            fmt_ctx->clear_floats(-1);
+        } else
+        {
+            fmt_ctx->clear_floats(self_size.context_idx);
+        }
+
+        _render_content(x, y, true, self_size.new_width(m_pos.width), fmt_ctx);
+    }
+
+    // Set block height
+    if (self_size.height.type != containing_block_context::cbc_value_type_auto)
+    {
+        if(self_size.height > 0)
+        {
+            m_pos.height = self_size.height;
+        }
+        if(src_el()->css().get_box_sizing() == box_sizing_border_box)
+        {
+            m_pos.height -= box_sizing_height();
+        }
+    } else if (src_el()->is_block_formatting_context())
+    {
+        // add the floats' height to the block height
         int floats_height = fmt_ctx->get_floats_height();
         if (floats_height > m_pos.height)
         {
@@ -274,23 +274,23 @@ int litehtml::render_item_block::_render(int x, int y, const containing_block_co
         }
     }
 
-	// Fix height with min-height attribute
-	if(self_size.min_height.type != containing_block_context::cbc_value_type_none)
-	{
-		if(m_pos.height < self_size.min_height)
-		{
-			m_pos.height = self_size.min_height;
-		}
-	}
+    // Fix height with min-height attribute
+    if(self_size.min_height.type != containing_block_context::cbc_value_type_none)
+    {
+        if(m_pos.height < self_size.min_height)
+        {
+            m_pos.height = self_size.min_height;
+        }
+    }
 
-	// Fix width with max-width attribute
-	if(self_size.max_height.type != containing_block_context::cbc_value_type_none)
-	{
-		if(m_pos.height > self_size.max_height)
-		{
-			m_pos.height = self_size.max_height;
-		}
-	}
+    // Fix width with max-width attribute
+    if(self_size.max_height.type != containing_block_context::cbc_value_type_none)
+    {
+        if(m_pos.height > self_size.max_height)
+        {
+            m_pos.height = self_size.max_height;
+        }
+    }
 
     // calculate the final position
     m_pos.move_to(x, y);
@@ -307,7 +307,7 @@ int litehtml::render_item_block::_render(int x, int y, const containing_block_co
             src_el()->get_document()->container()->get_image_size(list_image.c_str(), list_image_baseurl.c_str(), sz);
             if (m_pos.height < sz.height)
             {
-				m_pos.height = sz.height;
+                m_pos.height = sz.height;
             }
         }
 

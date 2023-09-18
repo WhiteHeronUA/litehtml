@@ -14,14 +14,14 @@
 //
 // Author: jdtang@google.com (Jonathan Tang)
 
-#include "string_piece.h"
+#include "include/gumbo/string_piece.h"
 
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 
-#include "util.h"
+#include "include/gumbo/util.h"
 
 struct GumboInternalParser;
 

@@ -42,24 +42,24 @@
 // prevents parse error position from being messed up by possible mark/resets in
 // temporary buffer manipulation.
 
-#include "tokenizer.h"
+#include "include/gumbo/tokenizer.h"
 
 #include <assert.h>
 #include <stdbool.h>
 #include <string.h>
 
-#include "attribute.h"
-#include "char_ref.h"
-#include "error.h"
-#include "gumbo.h"
-#include "parser.h"
-#include "string_buffer.h"
-#include "string_piece.h"
-#include "token_type.h"
-#include "tokenizer_states.h"
-#include "utf8.h"
-#include "util.h"
-#include "vector.h"
+#include "include/gumbo/attribute.h"
+#include "include/gumbo/char_ref.h"
+#include "include/gumbo/error.h"
+#include "include/gumbo.h"
+#include "include/gumbo/parser.h"
+#include "include/gumbo/string_buffer.h"
+#include "include/gumbo/string_piece.h"
+#include "include/gumbo/token_type.h"
+#include "include/gumbo/tokenizer_states.h"
+#include "include/gumbo/utf8.h"
+#include "include/gumbo/util.h"
+#include "include/gumbo/vector.h"
 
 // Compared against _script_data_buffer to determine if we're in double-escaped
 // script mode.

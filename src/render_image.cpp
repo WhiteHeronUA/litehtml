@@ -1,6 +1,6 @@
-#include "html.h"
-#include "render_image.h"
-#include "document.h"
+#include "../include/litehtml/html.h"
+#include "../include/litehtml/render_image.h"
+#include "../include/litehtml/document.h"
 
 int litehtml::render_item_image::_render(int x, int y, const containing_block_context &containing_block_size, formatting_context* fmt_ctx, bool second_pass)
 {
@@ -143,5 +143,5 @@ int litehtml::render_item_image::calc_max_height(int image_height, int containin
 {
     document::ptr doc = src_el()->get_document();
     return doc->to_pixels(src_el()->css().get_max_height(), src_el()->css().get_font_size(),
-						  containing_block_height == 0 ? image_height : containing_block_height);
+                          containing_block_height == 0 ? image_height : containing_block_height);
 }
