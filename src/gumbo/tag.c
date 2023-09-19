@@ -16,7 +16,6 @@
 
 #include "include/gumbo.h"
 
-#include <assert.h>
 #include <ctype.h>
 #include <string.h>
 
@@ -33,7 +32,6 @@ static const unsigned char kGumboTagSizes[] = {
 };
 
 const char* gumbo_normalized_tagname(GumboTag tag) {
-  assert(tag <= GUMBO_TAG_LAST);
   return kGumboTagNames[tag];
 }
 
@@ -42,12 +40,8 @@ void gumbo_tag_from_original_text(GumboStringPiece* text) {
     return;
   }
 
-  assert(text->length >= 2);
-  assert(text->data[0] == '<');
-  assert(text->data[text->length - 1] == '>');
   if (text->data[1] == '/') {
     // End tag.
-    assert(text->length >= 3);
     text->data += 2;  // Move past </
     text->length -= 3;
   } else {

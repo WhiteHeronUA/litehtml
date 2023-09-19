@@ -16,7 +16,6 @@
 
 #include "include/gumbo/vector.h"
 
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -69,8 +68,6 @@ static void enlarge_vector_if_full(
 void gumbo_vector_add(
     struct GumboInternalParser* parser, void* element, GumboVector* vector) {
   enlarge_vector_if_full(parser, vector);
-  assert(vector->data);
-  assert(vector->length < vector->capacity);
   vector->data[vector->length++] = element;
 }
 
@@ -94,8 +91,6 @@ int gumbo_vector_index_of(GumboVector* vector, const void* element) {
 
 void gumbo_vector_insert_at(struct GumboInternalParser* parser, void* element,
     unsigned int index, GumboVector* vector) {
-  assert(index >= 0);
-  assert(index <= vector->length);
   enlarge_vector_if_full(parser, vector);
   ++vector->length;
   memmove(&vector->data[index + 1], &vector->data[index],
@@ -115,8 +110,6 @@ void gumbo_vector_remove(
 void* gumbo_vector_remove_at(struct GumboInternalParser* parser,
     unsigned int index, GumboVector* vector) {
   (void) parser;
-  assert(index >= 0);
-  assert(index < vector->length);
   void* result = vector->data[index];
   memmove(&vector->data[index], &vector->data[index + 1],
       sizeof(void*) * (vector->length - index - 1));

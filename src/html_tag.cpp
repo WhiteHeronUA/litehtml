@@ -356,7 +356,6 @@ const Type& litehtml::html_tag::get_property_impl(string_id name, bool inherited
         return default_value;
     }
     // value must be invalid here
-    //assert(value.m_type == prop_type_invalid);
     return default_value;
 }
 

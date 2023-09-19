@@ -16,7 +16,6 @@
 
 #include "include/gumbo/error.h"
 
-#include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -100,7 +99,6 @@ static void handle_parser_error(GumboParser* parser,
       return;
     case GUMBO_TOKEN_COMMENT:
       // Should never happen; comments are always legal.
-      assert(0);
       // But just in case...
       print_message(parser, output, "Comments aren't legal here");
       return;
@@ -134,11 +132,9 @@ static void handle_parser_error(GumboParser* parser,
 // pointer to the beginning of the string if this is the first line.
 static const char* find_last_newline(
     const char* original_text, const char* error_location) {
-  assert(error_location >= original_text);
   const char* c = error_location;
   for (; c != original_text && *c != '\n'; --c) {
     // There may be an error at EOF, which would be a nul byte.
-    assert(*c || c == error_location);
   }
   return c == original_text ? c : c + 1;
 }

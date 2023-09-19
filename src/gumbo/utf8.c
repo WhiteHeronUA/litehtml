@@ -16,7 +16,6 @@
 
 #include "include/gumbo/utf8.h"
 
-#include <assert.h>
 #include <stdint.h>
 #include <string.h>
 #include <strings.h>  // For strncasecmp.
@@ -144,7 +143,6 @@ static void read_char(Utf8Iterator* iter) {
       // overrun, instead of having to read in a full next code point.
       // http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#preprocessing-the-input-stream
       if (code_point == '\r') {
-        assert(iter->_width == 1);
         const char* next = c + 1;
         if (next < iter->_end && *next == '\n') {
           // Advance the iter, as if the carriage return didn't exist.

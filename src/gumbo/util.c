@@ -16,7 +16,6 @@
 
 #include "include/gumbo/util.h"
 
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>

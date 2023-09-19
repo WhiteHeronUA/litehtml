@@ -26,11 +26,9 @@
 
 #include "include/gumbo/char_ref.h"
 
-#include <assert.h>
 #include <ctype.h>
 #include <stddef.h>
 #include <stdio.h>
-#include <string.h>  // Only for debug assertions at present.
 
 #include "include/gumbo/error.h"
 #include "include/gumbo/string_piece.h"
@@ -13939,7 +13937,6 @@ static const int char_ref_en_valid_named_ref = 7623;
 
 static bool consume_named_ref(struct GumboInternalParser* parser,
     Utf8Iterator* input, bool is_in_attribute, OneOrTwoCodepoints* output) {
-  assert(output->first == kGumboNoChar);
   const char* p = utf8iterator_get_char_pointer(input);
   const char* pe = utf8iterator_get_end_pointer(input);
   const char* eof = pe;
@@ -23007,12 +23004,10 @@ _again:
   // clang-format on
 
   if (cs >= 7623) {
-    assert(output->first != kGumboNoChar);
     char last_char = *(te - 1);
     ptrdiff_t len = te - start;
     if (last_char == ';') {
-      bool matched = utf8iterator_maybe_consume_match(input, start, len, true);
-      assert(matched);
+      utf8iterator_maybe_consume_match(input, start, len, true);
       return true;
     } else if (is_in_attribute && (*te == '=' || isalnum(*te))) {
       output->first = kGumboNoChar;
@@ -23025,8 +23020,7 @@ _again:
       bad_ref.data = start;
       add_named_reference_error(
           parser, input, GUMBO_ERR_NAMED_CHAR_REF_WITHOUT_SEMICOLON, bad_ref);
-      bool matched = utf8iterator_maybe_consume_match(input, start, len, true);
-      assert(matched);
+      utf8iterator_maybe_consume_match(input, start, len, true);
       return false;
     }
   } else {

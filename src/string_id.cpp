@@ -1,6 +1,5 @@
 #include "../include/litehtml/html.h"
 #include "../include/litehtml/string_id.h"
-#include <assert.h>
 
 #ifndef LITEHTML_NO_THREADS
     #include <mutex>
@@ -23,7 +22,6 @@ static int init()
     for (auto& name : names)
     {
         trim(name);
-        assert(name[0] == '_' && name.back() == '_');
         name = name.substr(1, name.size() - 2);				// _border_color_ -> border_color
         std::replace(name.begin(), name.end(), '_', '-');	// border_color   -> border-color
         _id(name);  // this will create association _border_color_ <-> "border-color"
