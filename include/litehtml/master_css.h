@@ -372,5 +372,17 @@ figcaption {
 	display: block;
 }
 
+del {
+  text-decoration: line-through;
+}
+
+small {
+  font-size: smaller;
+}
+
+big {
+  font-size: larger;
+}
+
 )##"; }
 #endif  // LH_MASTER_CSS_H
