@@ -325,7 +325,7 @@ std::list< std::unique_ptr<litehtml::line_box_item> > litehtml::line_box::finish
             {
                 cixx += offj;
                 if ((counter + 1) == int(m_items.size()))
-                    cixx += 0.99f;
+                    cixx += 0.99F;
                 lbi->pos().x += int(cixx);
             }
             counter++;
