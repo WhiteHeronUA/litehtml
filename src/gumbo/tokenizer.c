@@ -331,7 +331,6 @@ static GumboTokenType get_char_token_type(bool is_in_cdata, int c) {
     case ' ':
       return GUMBO_TOKEN_WHITESPACE;
     case 0:
-      gumbo_debug("Emitted null byte.\n");
       return GUMBO_TOKEN_NULL;
     case -1:
       return GUMBO_TOKEN_EOF;
@@ -511,8 +510,6 @@ static StateResult emit_current_tag(GumboParser* parser, GumboToken* output) {
     output->v.start_tag.attributes = tag_state->_attributes;
     output->v.start_tag.is_self_closing = tag_state->_is_self_closing;
     tag_state->_last_start_tag = tag_state->_tag;
-    gumbo_debug(
-        "Emitted start tag %s.\n", gumbo_normalized_tagname(tag_state->_tag));
   } else {
     output->type = GUMBO_TOKEN_END_TAG;
     output->v.end_tag = tag_state->_tag;
@@ -524,13 +521,9 @@ static StateResult emit_current_tag(GumboParser* parser, GumboToken* output) {
       gumbo_destroy_attribute(parser, tag_state->_attributes.data[i]);
     }
     gumbo_parser_deallocate(parser, tag_state->_attributes.data);
-    gumbo_debug(
-        "Emitted end tag %s.\n", gumbo_normalized_tagname(tag_state->_tag));
   }
   gumbo_string_buffer_destroy(parser, &tag_state->_buffer);
   finish_token(parser, output);
-  gumbo_debug("Original text = %.*s.\n", output->original_text.length,
-      output->original_text.data);
   return RETURN_SUCCESS;
 }
 
@@ -545,7 +538,6 @@ static void abandon_current_tag(GumboParser* parser) {
   }
   gumbo_parser_deallocate(parser, tag_state->_attributes.data);
   gumbo_string_buffer_destroy(parser, &tag_state->_buffer);
-  gumbo_debug("Abandoning current tag.\n");
 }
 
 // Wraps the consume_char_ref function to handle its output and make the
@@ -667,7 +659,6 @@ static void start_new_tag(GumboParser* parser, bool is_start_tag) {
   tag_state->_drop_next_attr_value = false;
   tag_state->_is_start_tag = is_start_tag;
   tag_state->_is_self_closing = false;
-  gumbo_debug("Starting new tag.\n");
 }
 
 // Fills in the specified char* with the contents of the tag buffer.
@@ -842,8 +833,6 @@ void gumbo_tokenizer_set_state(GumboParser* parser, GumboTokenizerEnum state) {
 void gumbo_tokenizer_set_is_current_node_foreign(
     GumboParser* parser, bool is_foreign) {
   if (is_foreign != parser->_tokenizer_state->_is_current_node_foreign) {
-    gumbo_debug("Toggling is_current_node_foreign to %s.\n",
-        is_foreign ? "true" : "false");
   }
   parser->_tokenizer_state->_is_current_node_foreign = is_foreign;
 }
@@ -1154,14 +1143,12 @@ static StateResult handle_rawtext_end_tag_open_state(GumboParser* parser,
 // http://www.whatwg.org/specs/web-apps/current-work/complete5/tokenization.html#rawtext-end-tag-name-state
 static StateResult handle_rawtext_end_tag_name_state(GumboParser* parser,
     GumboTokenizerState* tokenizer, int c, GumboToken* output) {
-  gumbo_debug("Last end tag: %*s\n", (int) tokenizer->_tag_state._buffer.length,
-      tokenizer->_tag_state._buffer.data);
+  (void) tokenizer;
   if (is_alpha(c)) {
     append_char_to_tag_buffer(parser, ensure_lowercase(c), true);
     append_char_to_temporary_buffer(parser, c);
     return NEXT_CHAR;
   } /*else*/ if (is_appropriate_end_tag(parser)) {
-    gumbo_debug("Is an appropriate end tag.\n");
     switch (c) {
       case '\t':
       case '\n':
@@ -2812,8 +2799,6 @@ bool gumbo_lex(GumboParser* parser, GumboToken* output) {
 
   while (1) {
     int c = utf8iterator_current(&tokenizer->_input);
-    gumbo_debug(
-        "Lexing character '%c' (%d) in state %d.\n", c, c, tokenizer->_state);
     StateResult result =
         dispatch_table[tokenizer->_state](parser, tokenizer, c, output);
     // We need to clear reconsume_current_input before returning to prevent
