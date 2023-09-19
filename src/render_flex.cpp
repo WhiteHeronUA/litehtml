@@ -2,12 +2,12 @@
 #include "../include/litehtml/types.h"
 #include "../include/litehtml/render_flex.h"
 
-int litehtml::render_item_flex::_render_content(int x, int y, bool second_pass, const containing_block_context &self_size, formatting_context* fmt_ctx)
+int litehtml::render_item_flex::_render_content(int /*x*/, int /*y*/, bool /*second_pass*/, const containing_block_context &/*self_size*/, formatting_context* /*fmt_ctx*/)
 {
     return 0;
 }
 
-void litehtml::render_item_flex::draw_children(uint_ptr hdc, int x, int y, const position* clip, draw_flag flag, int zindex)
+void litehtml::render_item_flex::draw_children(uint_ptr /*hdc*/, int /*x*/, int /*y*/, const position* /*clip*/, draw_flag /*flag*/, int /*zindex*/)
 {
 
 }

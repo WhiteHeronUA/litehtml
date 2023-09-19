@@ -52,12 +52,12 @@ typedef char gumbo_tagset[GUMBO_TAG_LAST];
 static bool node_html_tag_is(const GumboNode*, GumboTag);
 static GumboInsertionMode get_current_template_insertion_mode(
     const GumboParser*);
-static bool handle_in_template(GumboParser*, GumboToken*);
-static void destroy_node(GumboParser*, GumboNode*);
+static bool handle_in_template(GumboParser* parser, GumboToken* token);
+static void destroy_node(GumboParser* parser, GumboNode* node);
 
-static void* malloc_wrapper(void* unused, size_t size) { return malloc(size); }
+static void* malloc_wrapper(void* unused, size_t size) { (void) unused; return malloc(size); }
 
-static void free_wrapper(void* unused, void* ptr) { free(ptr); }
+static void free_wrapper(void* unused, void* ptr) { (void) unused; free(ptr); }
 
 const GumboOptions kGumboDefaultOptions = {&malloc_wrapper, &free_wrapper, NULL,
     8, false, -1, GUMBO_TAG_LAST, GUMBO_NAMESPACE_HTML};
@@ -741,7 +741,7 @@ static GumboInsertionMode get_current_template_insertion_mode(
   if (template_insertion_modes->length == 0) {
     return GUMBO_INSERTION_MODE_INITIAL;
   }
-  return (GumboInsertionMode)
+  return (GumboInsertionMode)(uintptr_t)
       template_insertion_modes->data[(template_insertion_modes->length - 1)];
 }
 
@@ -825,7 +825,7 @@ InsertionLocation get_appropriate_insertion_location(
 static void append_node(
     GumboParser* parser, GumboNode* parent, GumboNode* node) {
   assert(node->parent == NULL);
-  assert(node->index_within_parent == -1);
+  assert(node->index_within_parent == (size_t) -1);
   GumboVector* children;
   if (parent->type == GUMBO_NODE_ELEMENT ||
       parent->type == GUMBO_NODE_TEMPLATE) {
@@ -846,7 +846,7 @@ static void append_node(
 static void insert_node(
     GumboParser* parser, GumboNode* node, InsertionLocation location) {
   assert(node->parent == NULL);
-  assert(node->index_within_parent == -1);
+  assert(node->index_within_parent == (size_t) -1);
   GumboNode* parent = location.target;
   int index = location.index;
   if (index != -1) {

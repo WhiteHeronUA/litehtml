@@ -89,7 +89,7 @@ void style::parse_property(const string& txt, const string& baseurl, document_co
 
 void style::add_property(string_id name, const string& val, const string& baseurl, bool important, document_container* container)
 {
-    if (val.find("var(") != -1) return add_parsed_property(name, property_value(val, important, prop_type_var));
+    if (val.find("var(") != std::string::npos) return add_parsed_property(name, property_value(val, important, prop_type_var));
     if (val == "inherit" && name != _font_)       return add_parsed_property(name, property_value(important, prop_type_inherit));
 
     int idx;
@@ -693,7 +693,7 @@ bool style::parse_one_background(const string& val, document_container* containe
                 clip_found = true;
             }
         } else if(	value_in_list(token, background_position_strings) ||
-                    token.find('/') != -1 ||
+                    token.find('/') != std::string::npos ||
                     t_isdigit(token[0]) ||
                     token[0] == '+'	||
                     token[0] == '-'	||
@@ -968,7 +968,7 @@ void style::parse_font(const string& val, bool important)
             add_parsed_property(_font_variant_, property_value(idx, important));
         }
         else if(t_isdigit(token[0]) || token[0] == '.' ||
-            value_in_list(token, font_size_strings) || token.find('/') != -1)
+            value_in_list(token, font_size_strings) || token.find('/') != std::string::npos)
         {
             string_vector szlh;
             split_string(token, szlh, "/");
@@ -1131,10 +1131,10 @@ void style::subst_vars_(string& str, const element* el)
     while (1)
     {
         auto start = str.find("var(");
-        if (start == -1) break;
+        if (start == std::string::npos) break;
         if (start > 0 && isalnum(str[start - 1])) break;
         auto end = str.find(")", start + 4);
-        if (end == -1) break;
+        if (end == std::string::npos) break;
         auto name = str.substr(start + 4, end - start - 4);
         trim(name);
         string val = el->get_custom_property(_id(name), "");

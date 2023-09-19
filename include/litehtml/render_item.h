@@ -27,12 +27,12 @@ namespace litehtml
         bool                                        m_skip;
         std::vector<std::shared_ptr<render_item>>   m_positioned;
 
-		containing_block_context calculate_containing_block_context(const containing_block_context& cb_context);
-		void calc_cb_length(const css_length& len, int percent_base, containing_block_context::typed_int& out_value) const;
-		virtual int _render(int x, int y, const containing_block_context& containing_block_size, formatting_context* fmt_ctx, bool second_pass = false)
-		{
-			return 0;
-		}
+        containing_block_context calculate_containing_block_context(const containing_block_context& cb_context);
+        void calc_cb_length(const css_length& len, int percent_base, containing_block_context::typed_int& out_value) const;
+        virtual int _render(int /*x*/, int /*y*/, const containing_block_context& /*containing_block_size*/, formatting_context* /*fmt_ctx*/, bool /*second_pass*/ = false)
+        {
+            return 0;
+        }
 
     public:
         explicit render_item(std::shared_ptr<element>  src_el);
@@ -164,93 +164,93 @@ namespace litehtml
             return m_padding;
         }
 
-		void set_paddings(const margins& val)
-		{
-			m_padding = val;
-		}
+        void set_paddings(const margins& val)
+        {
+            m_padding = val;
+        }
 
         margins& get_borders()
         {
             return m_borders;
         }
 
-		/**
-		 * Top offset to the element content. Includes paddings, margins and borders.
-		 */
+        /**
+         * Top offset to the element content. Includes paddings, margins and borders.
+         */
         int content_offset_top() const
         {
             return m_margins.top + m_padding.top + m_borders.top;
         }
 
-		/**
-		 * Bottom offset to the element content. Includes paddings, margins and borders.
-		 */
+        /**
+         * Bottom offset to the element content. Includes paddings, margins and borders.
+         */
         inline int content_offset_bottom() const
         {
             return m_margins.bottom + m_padding.bottom + m_borders.bottom;
         }
 
-		/**
-		 * Left offset to the element content. Includes paddings, margins and borders.
-		 */
+        /**
+         * Left offset to the element content. Includes paddings, margins and borders.
+         */
         int content_offset_left() const
         {
             return m_margins.left + m_padding.left + m_borders.left;
         }
 
-		/**
-		 * Right offset to the element content. Includes paddings, margins and borders.
-		 */
+        /**
+         * Right offset to the element content. Includes paddings, margins and borders.
+         */
         int content_offset_right() const
         {
             return m_margins.right + m_padding.right + m_borders.right;
         }
 
-		/**
-		 * Sum of left and right offsets to the element content. Includes paddings, margins and borders.
-		 */
+        /**
+         * Sum of left and right offsets to the element content. Includes paddings, margins and borders.
+         */
         int content_offset_width() const
         {
             return content_offset_left() + content_offset_right();
         }
 
-		/**
-		 * Sum of top and bottom offsets to the element content. Includes paddings, margins and borders.
-		 */
+        /**
+         * Sum of top and bottom offsets to the element content. Includes paddings, margins and borders.
+         */
         int content_offset_height() const
         {
             return content_offset_top() + content_offset_bottom();
         }
 
-		int box_sizing_left() const
-		{
-			return m_padding.left + m_borders.left;
-		}
+        int box_sizing_left() const
+        {
+            return m_padding.left + m_borders.left;
+        }
 
-		int box_sizing_right() const
-		{
-			return m_padding.right + m_borders.right;
-		}
+        int box_sizing_right() const
+        {
+            return m_padding.right + m_borders.right;
+        }
 
-		int box_sizing_width() const
-		{
-			return box_sizing_left() + box_sizing_left();
-		}
+        int box_sizing_width() const
+        {
+            return box_sizing_left() + box_sizing_left();
+        }
 
-		int box_sizing_top() const
-		{
-			return m_padding.top + m_borders.top;
-		}
+        int box_sizing_top() const
+        {
+            return m_padding.top + m_borders.top;
+        }
 
-		int box_sizing_bottom() const
-		{
-			return m_padding.bottom + m_borders.bottom;
-		}
+        int box_sizing_bottom() const
+        {
+            return m_padding.bottom + m_borders.bottom;
+        }
 
-		int box_sizing_height() const
-		{
-			return box_sizing_top() + box_sizing_bottom();
-		}
+        int box_sizing_height() const
+        {
+            return box_sizing_top() + box_sizing_bottom();
+        }
 
         void parent(const std::shared_ptr<render_item>& par)
         {
@@ -262,10 +262,10 @@ namespace litehtml
             return m_element;
         }
 
-		const css_properties& css() const
-		{
-			return m_element->css();
-		}
+        const css_properties& css() const
+        {
+            return m_element->css();
+        }
 
         void add_child(const std::shared_ptr<render_item>& ri)
         {
@@ -273,10 +273,10 @@ namespace litehtml
             ri->parent(shared_from_this());
         }
 
-		bool is_root() const
-		{
-			return m_parent.expired();
-		}
+        bool is_root() const
+        {
+            return m_parent.expired();
+        }
 
         bool collapse_top_margin() const
         {
@@ -303,7 +303,7 @@ namespace litehtml
             return !(m_skip || src_el()->css().get_display() == display_none || src_el()->css().get_visibility() != visibility_visible);
         }
 
-		int render(int x, int y, const containing_block_context& containing_block_size, formatting_context* fmt_ctx, bool second_pass = false);
+        int render(int x, int y, const containing_block_context& containing_block_size, formatting_context* fmt_ctx, bool second_pass = false);
         int calc_width(int defVal, int containing_block_width) const;
         bool get_predefined_height(int& p_height, int containing_block_height) const;
         void apply_relative_shift(const containing_block_context &containing_block_size);
@@ -327,10 +327,10 @@ namespace litehtml
         void add_positioned(const std::shared_ptr<litehtml::render_item> &el);
         void get_redraw_box(litehtml::position& pos, int x = 0, int y = 0);
         void calc_document_size( litehtml::size& sz, litehtml::size& content_size, int x = 0, int y = 0 );
-		virtual void get_inline_boxes( position::vector& boxes ) const {};
-		virtual void set_inline_boxes( position::vector& boxes ) {};
-		virtual void add_inline_box( const position& box ) {};
-		virtual void clear_inline_boxes() {};
+        virtual void get_inline_boxes( position::vector& /*boxes*/ ) const {};
+        virtual void set_inline_boxes( position::vector& /*boxes*/ ) {};
+        virtual void add_inline_box( const position& /*box*/ ) {};
+        virtual void clear_inline_boxes() {};
         void draw_stacking_context( uint_ptr hdc, int x, int y, const position* clip, bool with_positioned );
         virtual void draw_children( uint_ptr hdc, int x, int y, const position* clip, draw_flag flag, int zindex );
         virtual int get_draw_vertical_offset() { return 0; }
@@ -346,7 +346,7 @@ namespace litehtml
          * @return
          */
         void get_rendering_boxes( position::vector& redraw_boxes);
-	};
+    };
 }
 
 #endif //LH_RENDER_ITEM_H

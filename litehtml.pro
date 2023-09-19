@@ -2,11 +2,6 @@ CONFIG   += c++20 staticlib
 QT       -= core gui
 TEMPLATE  = lib
 
-DISTFILES += \
-    src/gumbo/CMakeLists.txt \
-    src/gumbo/LICENSE \
-    src/gumbo/tag.in
-
 HEADERS += \
     include/litehtml.h \
     include/litehtml/background.h \

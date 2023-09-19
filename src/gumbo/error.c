@@ -59,7 +59,7 @@ static int print_message(
   }
 #endif
 
-  if (bytes_written > remaining_capacity) {
+  if (bytes_written > (int) remaining_capacity) {
     gumbo_string_buffer_reserve(
         parser, output->capacity + bytes_written, output);
     remaining_capacity = output->capacity - output->length;
@@ -79,7 +79,7 @@ static void print_tag_stack(GumboParser* parser, const GumboParserError* error,
     if (i) {
       print_message(parser, output, ", ");
     }
-    GumboTag tag = (GumboTag) error->tag_stack.data[i];
+    GumboTag tag = (GumboTag)(uintptr_t) error->tag_stack.data[i];
     print_message(parser, output, gumbo_normalized_tagname(tag));
   }
   gumbo_string_buffer_append_codepoint(parser, '.', output);
@@ -148,6 +148,7 @@ static const char* find_last_newline(
 // terminating null byte if this is the last line.
 static const char* find_next_newline(
     const char* original_text, const char* error_location) {
+  (void) original_text;
   const char* c = error_location;
   for (; *c && *c != '\n'; ++c)
     ;
