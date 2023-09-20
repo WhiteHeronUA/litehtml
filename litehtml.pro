@@ -1,5 +1,6 @@
 CONFIG   += c++20 staticlib
-TEMPLATE  = lib
+QT       += network widgets
+TEMPLATE  = app
 
 HEADERS += \
     containers/qt/qt_container.h \
@@ -84,6 +85,7 @@ HEADERS += \
     src/gumbo/visualc/include/strings.h
 
 SOURCES += \
+    containers/qt/main.cpp \
     containers/qt/qt_container.cpp \
     src/codepoint.cpp \
     src/css_borders.cpp \
