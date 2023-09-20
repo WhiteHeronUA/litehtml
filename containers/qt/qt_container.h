@@ -75,9 +75,14 @@ class qt_container final :
         std::string             resolve_color( const std::string& in_color ) const override;
 
 
-    private://////////////////////////////////////////////////////////////////////////
+    public://////////////////////////////////////////////////////////////////////////
 
 // this class API:
+
+static  QPixmap                 render( const char* in_html, int in_width );
+
+
+    private://////////////////////////////////////////////////////////////////////////
 
         QPixmap                 loaded_image( const QString& in_src, const QString& in_base ) const;
         QUrl                    resolve_url( const QString& in_src, const QString& in_base ) const;

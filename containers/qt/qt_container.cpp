@@ -366,6 +366,35 @@ void qt_container::draw_borders( uint_ptr in_dc, const borders& in_borders, cons
 
 //////////////////////////////////////////////////////////////////////////
 #pragma mark -
+#pragma mark static methods
+//////////////////////////////////////////////////////////////////////////
+
+
+/**********************************************************************************************/
+QPixmap qt_container::render( const char* in_html, int in_width )
+{
+    QPixmap r;
+
+    {
+        QPixmap      pmp;
+        qt_container ctr { &pmp };
+        const auto   doc { document::createFromString( in_html, &ctr ) };
+
+        doc->render( in_width );
+
+        r = QPixmap( in_width, doc->content_height() );
+        r.fill( Qt::white );
+
+        QPainter p( &r );
+        doc->draw( litehtml::uint_ptr( &p ), 0, 0, nullptr );
+    }
+
+    return r;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+#pragma mark -
 #pragma mark internal methods
 //////////////////////////////////////////////////////////////////////////
 

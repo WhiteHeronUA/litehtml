@@ -8,8 +8,7 @@
 
 
 /**********************************************************************************************/
-constexpr int HTML_WIDTH  = 600;
-constexpr int HTML_HEIGHT = 800;
+constexpr int HTML_WIDTH = 600;
 
 /**********************************************************************************************/
 static const char* const HTML_TEXT = R"(
@@ -61,20 +60,10 @@ int main( int argc, char* argv[] )
 {
     const QApplication app( argc, argv );
 
-    QPixmap pmp( HTML_WIDTH, HTML_HEIGHT );
-    pmp.fill( Qt::white );
-
-    {
-        QPainter     p( &pmp );
-        qt_container ctr( &p );
-
-        const auto doc = litehtml::document::createFromString( HTML_TEXT, &ctr );
-        doc->render( HTML_WIDTH );
-        doc->draw( litehtml::uint_ptr( &p ), 0, 0, nullptr );
-    }
+    const QPixmap pmp = qt_container::render( HTML_TEXT, HTML_WIDTH );
 
     auto* const l = new QLabel;
-    l->resize( HTML_WIDTH, HTML_HEIGHT );
+    l->resize( pmp.width(), pmp.height() );
     l->setAutoFillBackground( true );
     l->setBackgroundRole( QPalette::Base );
     l->setPixmap( pmp );
