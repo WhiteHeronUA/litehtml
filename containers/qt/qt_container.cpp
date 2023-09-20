@@ -440,20 +440,20 @@ void qt_container::transform_text( std::string& ioText, text_transform inTt )
             if( !s.isEmpty() )
             {
                 s.front() = s.front().toUpper();
-                ioText = s.toStdString();
+                ioText = s.toUtf8().data();
             }
         }
         break;
 
         case text_transform_uppercase   :
         {
-            ioText = QString::fromStdString( ioText ).toUpper().toStdString();
+            ioText = QString::fromStdString( ioText ).toUpper().toUtf8().data();
         }
         break;
 
         case text_transform_lowercase   :
         {
-            ioText = QString::fromStdString( ioText ).toLower().toStdString();
+            ioText = QString::fromStdString( ioText ).toLower().toUtf8().data();
         }
         break;
 
@@ -466,13 +466,13 @@ void qt_container::import_css( std::string& outText, const std::string& inUrl, s
 {
     const QUrl url = resolve_url( inUrl.c_str(), ioBase.c_str() );
 
-    ioBase = url.toString( QUrl::None ).section( '/', 0, -2 ).toStdString();
+    ioBase = url.toString( QUrl::None ).section( '/', 0, -2 ).toUtf8().data();
 
     if( url.isLocalFile() )
     {
         QFile f( url.toLocalFile() );
         f.open( QIODevice::ReadOnly );
-        outText = f.readAll().toStdString();
+        outText = f.readAll().data();
     }
     else
     {
@@ -483,7 +483,7 @@ void qt_container::import_css( std::string& outText, const std::string& inUrl, s
         connect( reply, &QNetworkReply::finished, &loop, &QEventLoop::quit );
         loop.exec();
 
-        outText = reply->readAll().toStdString();
+        outText = reply->readAll().data();
         reply->deleteLater();
     }
 }
@@ -541,7 +541,7 @@ std::string qt_container::resolve_color( const std::string& inColor ) const
 {
     const QColor c( inColor.c_str() );
     if( c.isValid() )
-        return c.name().toStdString();
+        return c.name().toUtf8().data();
 
     return {};
 }
