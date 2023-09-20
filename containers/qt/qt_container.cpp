@@ -9,6 +9,7 @@
 
 // QTLITEHTML
 #include "qt_container.h"
+#include "qt_litehtml.h"
 
 /**********************************************************************************************/
 using namespace litehtml;
@@ -21,17 +22,17 @@ using namespace litehtml;
 
 
 /**********************************************************************************************/
-static inline QColor ToQColor( const web_color& inColor )
+static inline QColor ToQColor( const web_color& in_color )
 {
-    return { inColor.red, inColor.green, inColor.blue, inColor.alpha };
+    return { in_color.red, in_color.green, in_color.blue, in_color.alpha };
 }
 
 /**********************************************************************************************/
-static inline QPen ToQPen( const litehtml::border& inBorder )
+static inline QPen ToQPen( const litehtml::border& in_border )
 {
     Qt::PenStyle style { Qt::NoPen };
 
-    switch( inBorder.style )
+    switch( in_border.style )
     {
         case border_style_dashed    : style = Qt::DashLine; break;
         case border_style_dotted    : style = Qt::DotLine; break;
@@ -47,13 +48,13 @@ static inline QPen ToQPen( const litehtml::border& inBorder )
         case border_style_none      :;
     }
 
-    return { ToQColor( inBorder.color ), double( inBorder.width ), style };
+    return { ToQColor( in_border.color ), double( in_border.width ), style };
 }
 
 /**********************************************************************************************/
-static inline QRect ToQRect( const position& inPos )
+static inline QRect ToQRect( const position& in_pos )
 {
-    return { inPos.x, inPos.y, inPos.width, inPos.height };
+    return { in_pos.x, in_pos.y, in_pos.width, in_pos.height };
 }
 
 
@@ -64,19 +65,17 @@ static inline QRect ToQRect( const position& inPos )
 
 
 /**********************************************************************************************/
-qt_container::qt_container( QPainter* inPainter )
+qt_container::qt_container( QPaintDevice* in_paint_device )
 :
-    mpPainter( inPainter )
+    paint_device_( in_paint_device )
 {
 }
 
 /**********************************************************************************************/
-qt_container::qt_container(
-    QWidget*  inWidget,
-    QPainter* inPainter )
+qt_container::qt_container( qt_litehtml* in_view )
 :
-    mpPainter ( inPainter ),
-    mpWidget  ( inWidget )
+    paint_device_ ( in_view ),
+    view_         ( in_view )
 {
 }
 
@@ -89,18 +88,18 @@ qt_container::qt_container(
 
 /**********************************************************************************************/
 uint_ptr qt_container::create_font(
-    const char*   inFaceName,
-    int           inSize,
-    int           inWeight,
-    font_style    inItalic,
-    unsigned int  inDecoration,
-    font_metrics* outFontMetrics )
+    const char*   in_face_name,
+    int           in_size,
+    int           in_weight,
+    font_style    in_italic,
+    unsigned int  in_decoration,
+    font_metrics* out_font_metrics )
 {
     auto* const r = new QFont;
 
     // Families
     QStringList families;
-    for( auto family : QString( inFaceName ).split( ',' ) )
+    for( auto family : QString( in_face_name ).split( ',' ) )
     {
         family = family.simplified();
 
@@ -131,75 +130,72 @@ uint_ptr qt_container::create_font(
     r->setFamilies( families );
 
     // Size
-    r->setPixelSize( inSize );
+    r->setPixelSize( in_size );
 
     // Weight
-    r->setWeight( QFont::Weight( inWeight ) );
+    r->setWeight( QFont::Weight( in_weight ) );
 
     // Style
-    r->setStyle( ( inItalic == font_style::font_style_italic ) ? QFont::StyleItalic : QFont::StyleNormal );
+    r->setStyle( ( in_italic == font_style::font_style_italic ) ? QFont::StyleItalic : QFont::StyleNormal );
 
     // Decorations
-    if( inDecoration == font_decoration_underline )
+    if( in_decoration == font_decoration_underline )
         r->setUnderline( true );
-    else if( inDecoration == font_decoration_overline )
+    else if( in_decoration == font_decoration_overline )
         r->setOverline( true );
-    else if( inDecoration == font_decoration_linethrough )
+    else if( in_decoration == font_decoration_linethrough )
         r->setStrikeOut( true );
 
     // Font Metrics
-    if( outFontMetrics )
+    if( out_font_metrics )
     {
         const QFontMetrics metrics( *r );
 
-        outFontMetrics->ascent      = metrics.ascent();
-        outFontMetrics->descent     = metrics.descent();
-        outFontMetrics->draw_spaces = true;
-        outFontMetrics->height      = metrics.height();
-        outFontMetrics->x_height    = metrics.xHeight();
+        out_font_metrics->ascent      = metrics.ascent();
+        out_font_metrics->descent     = metrics.descent();
+        out_font_metrics->draw_spaces = true;
+        out_font_metrics->height      = metrics.height();
+        out_font_metrics->x_height    = metrics.xHeight();
     }
 
     return reinterpret_cast<uint_ptr>( r );
 }
 
 /**********************************************************************************************/
-void qt_container::delete_font( uint_ptr inFont )
+void qt_container::delete_font( uint_ptr in_font )
 {
-    delete reinterpret_cast<QFont*>( inFont );
+    delete reinterpret_cast<QFont*>( in_font );
 }
 
 /**********************************************************************************************/
-int qt_container::text_width( const char* inText, uint_ptr inFont )
+int qt_container::text_width( const char* in_text, uint_ptr in_font )
 {
-    auto* const font = reinterpret_cast<QFont*>( inFont );
+    auto* const font = reinterpret_cast<QFont*>( in_font );
 
-    return QFontMetrics( *font ).horizontalAdvance( inText );
+    return QFontMetrics( *font ).horizontalAdvance( in_text );
 }
 
 /**********************************************************************************************/
-void qt_container::draw_text( uint_ptr inDC, const char* inText, uint_ptr inFont, web_color inColor, const position& inPos )
+void qt_container::draw_text( uint_ptr in_dc, const char* in_text, uint_ptr in_font, web_color in_color, const position& in_pos )
 {
-    auto* const font    = reinterpret_cast<QFont*>( inFont );
-    auto* const painter = reinterpret_cast<QPainter*>( inDC );
+    auto* const font    = reinterpret_cast<QFont*>( in_font );
+    auto* const painter = reinterpret_cast<QPainter*>( in_dc );
 
     painter->setFont( *font );
-    painter->setPen( ToQColor( inColor ) );
-    painter->drawText( ToQRect( inPos ), 0, inText );
+    painter->setPen( ToQColor( in_color ) );
+    painter->drawText( ToQRect( in_pos ), 0, in_text );
 }
 
 /**********************************************************************************************/
-int qt_container::pt_to_px( int inPt ) const
+int qt_container::pt_to_px( int in_pt ) const
 {
-    if( mpPainter )
+    if( paint_device_ )
     {
-        if( auto* const device = mpPainter->device() )
-        {
-            const auto ld = device->logicalDpiY();
-            const auto pd = device->physicalDpiY();
+        const auto ld = paint_device_->logicalDpiY();
+        const auto pd = paint_device_->physicalDpiY();
 
-            if( ld )
-                return int( inPt * pd * 11. / ld / 12 + .5 );
-        }
+        if( ld )
+            return int( in_pt * pd * 11. / ld / 12 + .5 );
     }
 
     return 1;
@@ -208,36 +204,36 @@ int qt_container::pt_to_px( int inPt ) const
 /**********************************************************************************************/
 int qt_container::get_default_font_size() const
 {
-    return mDefaultFont.pointSize();
+    return default_font_.pointSize();
 }
 
 /**********************************************************************************************/
 const char* qt_container::get_default_font_name() const
 {
-    mDefaultFontName = mDefaultFont.family().toUtf8();
+    default_font_name_ = default_font_.family().toUtf8();
 
-    return mDefaultFontName.constData();
+    return default_font_name_.constData();
 }
 
 /**********************************************************************************************/
-void qt_container::draw_list_marker( uint_ptr inDC, const list_marker& inMarker )
+void qt_container::draw_list_marker( uint_ptr in_dc, const list_marker& in_marker )
 {
-    auto* const painter = reinterpret_cast<QPainter*>( inDC );
+    auto* const painter = reinterpret_cast<QPainter*>( in_dc );
 
     // Image
-    if( !inMarker.image.empty() )
+    if( !in_marker.image.empty() )
     {
-        const QPixmap pixmap = loaded_image( inMarker.image.c_str(), inMarker.baseurl );
+        const QPixmap pixmap = loaded_image( in_marker.image.c_str(), in_marker.baseurl );
 
-        painter->drawPixmap( ToQRect( inMarker.pos ), pixmap );
+        painter->drawPixmap( ToQRect( in_marker.pos ), pixmap );
     }
     // Type
     else
     {
-        const auto c = ToQColor( inMarker.color );
-        const auto r = ToQRect( inMarker.pos );
+        const auto c = ToQColor( in_marker.color );
+        const auto r = ToQRect( in_marker.pos );
 
-        switch( inMarker.marker_type )
+        switch( in_marker.marker_type )
         {
             case list_style_type_circle             :
             {
@@ -270,13 +266,13 @@ void qt_container::draw_list_marker( uint_ptr inDC, const list_marker& inMarker 
 }
 
 /**********************************************************************************************/
-void qt_container::load_image( const char* inSrc, const char* inBase, bool inRedrawOnReady )
+void qt_container::load_image( const char* in_src, const char* in_base, bool in_redraw_on_ready )
 {
-    const auto url = resolve_url( inSrc, inBase );
+    const auto url = resolve_url( in_src, in_base );
 
-    const std::lock_guard _ { mImagesLock };
+    const std::lock_guard _ { images_lock_ };
 
-    if( mImages.contains( url ) )
+    if( images_.contains( url ) )
         return;
 
     if( url.isLocalFile() )
@@ -284,27 +280,28 @@ void qt_container::load_image( const char* inSrc, const char* inBase, bool inRed
         QPixmap image;
         image.load( url.fileName() );
 
-        mImages.insert( url, image );
+        images_.insert( url, image );
     }
     else
     {
         auto* const nm = new QNetworkAccessManager;
         nm->get( QNetworkRequest( url ) );
 
-        QObject::connect( nm, &QNetworkAccessManager::finished, this, [inRedrawOnReady, nm, url, this]( QNetworkReply* inReply )
+        QObject::connect( nm, &QNetworkAccessManager::finished, this, [in_redraw_on_ready, nm, url, this]( QNetworkReply* inReply )
         {
             {
-                const std::lock_guard _ { mImagesLock };
+                const std::lock_guard _ { images_lock_ };
 
                 QPixmap image;
                 image.loadFromData( inReply->readAll() );
 
-                mImages.insert( url, image );
+                images_.insert( url, image );
 
             }
 
-            if( inRedrawOnReady && mpWidget )
-                mpWidget->update();
+            // TODO(I.N.): update layout?
+            if( in_redraw_on_ready && view_ )
+                view_->update();
 
             inReply->deleteLater();
             nm->deleteLater();
@@ -313,19 +310,19 @@ void qt_container::load_image( const char* inSrc, const char* inBase, bool inRed
 }
 
 /**********************************************************************************************/
-void qt_container::get_image_size( const char* inSrc, const char* inBase, size& outSize )
+void qt_container::get_image_size( const char* in_src, const char* in_base, size& out_size )
 {
-    const QPixmap image = loaded_image( inSrc, inBase );
+    const QPixmap image = loaded_image( in_src, in_base );
 
-    outSize.width  = image.width();
-    outSize.height = image.height();
+    out_size.width  = image.width();
+    out_size.height = image.height();
 }
 
 /**********************************************************************************************/
-void qt_container::draw_background( uint_ptr inDC, const std::vector<background_paint>& inBack )
+void qt_container::draw_background( uint_ptr in_dc, const std::vector<background_paint>& in_back )
 {
-    auto* const painter = reinterpret_cast<QPainter*>( inDC );
-    const auto& back    = inBack.back();
+    auto* const painter = reinterpret_cast<QPainter*>( in_dc );
+    const auto& back    = in_back.back();
 
     painter->save();
     painter->setClipRect( ToQRect( back.clip_box ) );
@@ -337,32 +334,32 @@ void qt_container::draw_background( uint_ptr inDC, const std::vector<background_
 }
 
 /**********************************************************************************************/
-void qt_container::draw_borders( uint_ptr inDC, const borders& inBorders, const position& inDrawPos, bool /*inRoot*/ )
+void qt_container::draw_borders( uint_ptr in_dc, const borders& in_borders, const position& in_draw_pos, bool /*in_root*/ )
 {
-    auto* const painter = reinterpret_cast<QPainter*>( inDC );
+    auto* const painter = reinterpret_cast<QPainter*>( in_dc );
 
-    if( const auto penTop = ToQPen( inBorders.top ); penTop.style() != Qt::NoPen )
+    if( const auto penTop = ToQPen( in_borders.top ); penTop.style() != Qt::NoPen )
     {
         painter->setPen( penTop );
-        painter->drawLine( inDrawPos.left(), inDrawPos.top(), inDrawPos.right(), inDrawPos.top() );
+        painter->drawLine( in_draw_pos.left(), in_draw_pos.top(), in_draw_pos.right(), in_draw_pos.top() );
     }
 
-    if( const auto penLeft = ToQPen( inBorders.left ) ; penLeft.style() != Qt::NoPen )
+    if( const auto penLeft = ToQPen( in_borders.left ) ; penLeft.style() != Qt::NoPen )
     {
         painter->setPen( penLeft );
-        painter->drawLine( inDrawPos.left(), inDrawPos.top(), inDrawPos.left(), inDrawPos.bottom() );
+        painter->drawLine( in_draw_pos.left(), in_draw_pos.top(), in_draw_pos.left(), in_draw_pos.bottom() );
     }
 
-    if( const auto penBottom = ToQPen( inBorders.bottom ) ; penBottom.style() != Qt::NoPen )
+    if( const auto penBottom = ToQPen( in_borders.bottom ) ; penBottom.style() != Qt::NoPen )
     {
         painter->setPen( penBottom );
-        painter->drawLine( inDrawPos.left(), inDrawPos.bottom(), inDrawPos.right(), inDrawPos.bottom() );
+        painter->drawLine( in_draw_pos.left(), in_draw_pos.bottom(), in_draw_pos.right(), in_draw_pos.bottom() );
     }
 
-    if( const auto penRight = ToQPen( inBorders.right ) ; penRight.style() != Qt::NoPen )
+    if( const auto penRight = ToQPen( in_borders.right ) ; penRight.style() != Qt::NoPen )
     {
         painter->setPen( penRight );
-        painter->drawLine( inDrawPos.right(), inDrawPos.top(), inDrawPos.right(), inDrawPos.bottom() );
+        painter->drawLine( in_draw_pos.right(), in_draw_pos.top(), in_draw_pos.right(), in_draw_pos.bottom() );
     }
 }
 
@@ -374,22 +371,22 @@ void qt_container::draw_borders( uint_ptr inDC, const borders& inBorders, const 
 
 
 /**********************************************************************************************/
-QPixmap qt_container::loaded_image( const QString& inSrc, const QString& inBase ) const
+QPixmap qt_container::loaded_image( const QString& in_src, const QString& in_base ) const
 {
-    const auto url = resolve_url( inSrc, inBase );
+    const auto url = resolve_url( in_src, in_base );
 
-    const std::lock_guard _ { mImagesLock };
+    const std::lock_guard _ { images_lock_ };
 
-    return mImages.value( url );
+    return images_.value( url );
 }
 
 /**********************************************************************************************/
-QUrl qt_container::resolve_url( const QString& inSrc, const QString& inBase ) const
+QUrl qt_container::resolve_url( const QString& in_src, const QString& in_base ) const
 {
-    QUrl src( inSrc );
+    QUrl src( in_src );
 
     // Anchor
-    if( inSrc.startsWith( '#' ) )
+    if( in_src.startsWith( '#' ) )
         return src;
 
     // Full URL with scheme
@@ -397,30 +394,30 @@ QUrl qt_container::resolve_url( const QString& inSrc, const QString& inBase ) co
         return src;
 
     // Resolve
-    const QUrl base( inBase.isEmpty() ? mBaseURL : inBase );
+    const QUrl base( in_base.isEmpty() ? base_url_ : in_base );
 
-    return base.resolved( inSrc );
+    return base.resolved( in_src );
 }
 
 /**********************************************************************************************/
-void qt_container::set_caption( const char* inCaption )
+void qt_container::set_caption( const char* in_caption )
 {
-    mCaption = inCaption;
+    caption_ = in_caption;
 }
 
 /**********************************************************************************************/
-void qt_container::set_base_url( const char* inBaseUrl )
+void qt_container::set_base_url( const char* in_base_url )
 {
-    mBaseURL = inBaseUrl;
+    base_url_ = in_base_url;
 }
 
 /**********************************************************************************************/
-void qt_container::link( const std::shared_ptr<document>& /*inDoc*/, const element::ptr& /*inEl*/ )
+void qt_container::link( const std::shared_ptr<document>& /*in_doc*/, const element::ptr& /*in_el*/ )
 {
 }
 
 /**********************************************************************************************/
-void qt_container::on_anchor_click( const char* /*inUrl*/, const litehtml::element::ptr& /*inEl*/ )
+void qt_container::on_anchor_click( const char* /*in_url*/, const litehtml::element::ptr& /*in_el*/ )
 {
 }
 
@@ -430,30 +427,30 @@ void qt_container::set_cursor( const char* /*in_cursor*/ )
 }
 
 /**********************************************************************************************/
-void qt_container::transform_text( std::string& ioText, text_transform inTt )
+void qt_container::transform_text( std::string& io_text, text_transform in_tt )
 {
-    switch( inTt )
+    switch( in_tt )
     {
         case text_transform_capitalize  :
         {
-            auto s = QString::fromStdString( ioText ).toLower();
+            auto s = QString::fromStdString( io_text ).toLower();
             if( !s.isEmpty() )
             {
                 s.front() = s.front().toUpper();
-                ioText = s.toUtf8().data();
+                io_text = s.toUtf8().data();
             }
         }
         break;
 
         case text_transform_uppercase   :
         {
-            ioText = QString::fromStdString( ioText ).toUpper().toUtf8().data();
+            io_text = QString::fromStdString( io_text ).toUpper().toUtf8().data();
         }
         break;
 
         case text_transform_lowercase   :
         {
-            ioText = QString::fromStdString( ioText ).toLower().toUtf8().data();
+            io_text = QString::fromStdString( io_text ).toLower().toUtf8().data();
         }
         break;
 
@@ -462,17 +459,17 @@ void qt_container::transform_text( std::string& ioText, text_transform inTt )
 }
 
 /**********************************************************************************************/
-void qt_container::import_css( std::string& outText, const std::string& inUrl, std::string& ioBase )
+void qt_container::import_css( std::string& out_text, const std::string& in_url, std::string& io_base )
 {
-    const QUrl url = resolve_url( inUrl.c_str(), ioBase.c_str() );
+    const QUrl url = resolve_url( in_url.c_str(), io_base.c_str() );
 
-    ioBase = url.toString( QUrl::None ).section( '/', 0, -2 ).toUtf8().data();
+    io_base = url.toString( QUrl::None ).section( '/', 0, -2 ).toUtf8().data();
 
     if( url.isLocalFile() )
     {
         QFile f( url.toLocalFile() );
         f.open( QIODevice::ReadOnly );
-        outText = f.readAll().data();
+        out_text = f.readAll().data();
     }
     else
     {
@@ -483,63 +480,60 @@ void qt_container::import_css( std::string& outText, const std::string& inUrl, s
         connect( reply, &QNetworkReply::finished, &loop, &QEventLoop::quit );
         loop.exec();
 
-        outText = reply->readAll().data();
+        out_text = reply->readAll().data();
         reply->deleteLater();
     }
 }
 
 /**********************************************************************************************/
-void qt_container::set_clip( const position& inPos, const border_radiuses& inRadius )
+void qt_container::set_clip( const position& in_os, const border_radiuses& in_radius )
 {
-    mClips.emplaceBack( inPos, inRadius );
+    clips_.emplaceBack( in_os, in_radius );
 }
 
 /**********************************************************************************************/
 void qt_container::del_clip()
 {
-    if( !mClips.empty() )
-        mClips.pop_back();
+    if( !clips_.empty() )
+        clips_.pop_back();
 }
 
 /**********************************************************************************************/
-void qt_container::get_client_rect( position& outClient ) const
+void qt_container::get_client_rect( position& out_client ) const
 {
-    if( mpPainter )
+    if( paint_device_ )
     {
-        if( auto* const device = mpPainter->device() )
-        {
-            outClient.x      = 0;
-            outClient.y      = 0;
-            outClient.width  = device->width();
-            outClient.height = device->height();
-        }
+        out_client.x      = 0;
+        out_client.y      = 0;
+        out_client.width  = paint_device_->width();
+        out_client.height = paint_device_->height();
     }
 }
 
 /**********************************************************************************************/
 element::ptr qt_container::create_element(
-    const char* /*inTagName*/,
-    const string_map& /*inAttributes*/,
-    const std::shared_ptr<document>& /*inDoc*/ )
+    const char* /*in_tag_name*/,
+    const string_map& /*in_attributes*/,
+    const std::shared_ptr<document>& /*in_doc*/ )
 {
     return {};
 }
 
 /**********************************************************************************************/
-void qt_container::get_media_features( media_features& outMedia ) const
+void qt_container::get_media_features( media_features& out_media ) const
 {
-    outMedia.type = litehtml::media_type_screen;
+    out_media.type = litehtml::media_type_screen;
 }
 
 /**********************************************************************************************/
-void qt_container::get_language( std::string& /*outLanguage*/, std::string& /*outCulture*/ ) const
+void qt_container::get_language( std::string& /*out_language*/, std::string& /*out_culture*/ ) const
 {
 }
 
 /**********************************************************************************************/
-std::string qt_container::resolve_color( const std::string& inColor ) const
+std::string qt_container::resolve_color( const std::string& in_color ) const
 {
-    const QColor c( inColor.c_str() );
+    const QColor c( in_color.c_str() );
     if( c.isValid() )
         return c.name().toUtf8().data();
 

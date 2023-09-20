@@ -15,6 +15,9 @@
 class QPainter;
 class QPixmap;
 
+/**********************************************************************************************/
+class qt_litehtml;
+
 
 /**********************************************************************************************/
 class qt_container final :
@@ -23,11 +26,9 @@ class qt_container final :
 {
     public://////////////////////////////////////////////////////////////////////////
 
-                                qt_container( QPainter* inPainter );
-
-                                qt_container(
-                                    QWidget*  inWidget,
-                                    QPainter* inPainter );
+                                qt_container() = default;
+                                qt_container( QPaintDevice* in_paint_device );
+                                qt_container( qt_litehtml* in_view );
 
 
     public://////////////////////////////////////////////////////////////////////////
@@ -35,51 +36,51 @@ class qt_container final :
 // document_container API:
 
         litehtml::uint_ptr      create_font(
-                                    const char*             inFaceName,
-                                    int                     inSize,
-                                    int                     inWeight,
-                                    litehtml::font_style    inItalic,
-                                    unsigned int            inDecoration,
-                                    litehtml::font_metrics* outFontMetrics ) override;
+                                    const char*             in_face_name,
+                                    int                     in_size,
+                                    int                     in_weight,
+                                    litehtml::font_style    in_italic,
+                                    unsigned int            in_decoration,
+                                    litehtml::font_metrics* out_font_metrics ) override;
 
-        void                    delete_font( litehtml::uint_ptr inFont ) override;
-        int                     text_width( const char* inText, litehtml::uint_ptr inFont ) override;
-        void                    draw_text( litehtml::uint_ptr inDC, const char* inText, litehtml::uint_ptr inFont, litehtml::web_color inColor, const litehtml::position& inPos ) override;
-        int                     pt_to_px( int inPt ) const override;
+        void                    delete_font( litehtml::uint_ptr in_font ) override;
+        int                     text_width( const char* in_text, litehtml::uint_ptr in_font ) override;
+        void                    draw_text( litehtml::uint_ptr in_dc, const char* in_text, litehtml::uint_ptr in_font, litehtml::web_color in_color, const litehtml::position& in_pos ) override;
+        int                     pt_to_px( int in_pt ) const override;
         int                     get_default_font_size() const override;
         const char*             get_default_font_name() const override;
-        void                    draw_list_marker( litehtml::uint_ptr inDC, const litehtml::list_marker& inMarker ) override;
-        void                    load_image( const char* inSrc, const char* inBase, bool inRedrawOnReady ) override;
-        void                    get_image_size( const char* inSrc, const char* inBase, litehtml::size& outSize ) override;
-        void                    draw_background( litehtml::uint_ptr inDC, const std::vector<litehtml::background_paint>& inBack ) override;
-        void                    draw_borders( litehtml::uint_ptr inDC, const litehtml::borders& inBorders, const litehtml::position& inDrawPos, bool inRoot ) override;
-        void                    set_caption( const char* inCaption ) override;
-        void                    set_base_url( const char* inBaseUrl ) override;
-        void                    link( const std::shared_ptr<litehtml::document>& inDoc, const litehtml::element::ptr& inEl ) override;
-        void                    on_anchor_click( const char* inUrl, const litehtml::element::ptr& inEl ) override;
+        void                    draw_list_marker( litehtml::uint_ptr in_dc, const litehtml::list_marker& in_marker ) override;
+        void                    load_image( const char* in_src, const char* in_base, bool in_redraw_on_ready ) override;
+        void                    get_image_size( const char* in_src, const char* in_base, litehtml::size& out_size ) override;
+        void                    draw_background( litehtml::uint_ptr in_dc, const std::vector<litehtml::background_paint>& in_back ) override;
+        void                    draw_borders( litehtml::uint_ptr in_dc, const litehtml::borders& in_borders, const litehtml::position& in_draw_pos, bool in_root ) override;
+        void                    set_caption( const char* in_caption ) override;
+        void                    set_base_url( const char* in_base_url ) override;
+        void                    link( const std::shared_ptr<litehtml::document>& in_doc, const litehtml::element::ptr& in_el ) override;
+        void                    on_anchor_click( const char* in_url, const litehtml::element::ptr& in_el ) override;
         void                    set_cursor( const char* in_cursor ) override;
-        void                    transform_text( std::string& ioText, litehtml::text_transform inTt ) override;
-        void                    import_css( std::string& inText, const std::string& inUrl, std::string& inBase ) override;
-        void                    set_clip( const litehtml::position& inPos, const litehtml::border_radiuses& inRadius ) override;
+        void                    transform_text( std::string& io_text, litehtml::text_transform in_tt ) override;
+        void                    import_css( std::string& in_text, const std::string& in_url, std::string& in_base ) override;
+        void                    set_clip( const litehtml::position& in_pos, const litehtml::border_radiuses& in_radius ) override;
         void                    del_clip() override;
-        void                    get_client_rect( litehtml::position& outClient ) const override;
+        void                    get_client_rect( litehtml::position& out_client ) const override;
 
         litehtml::element::ptr	create_element(
-                                    const char* inTagName,
-                                    const litehtml::string_map& inAttributes,
-                                    const std::shared_ptr<litehtml::document>& inDoc ) override;
+                                    const char* in_tag_name,
+                                    const litehtml::string_map& in_attributes,
+                                    const std::shared_ptr<litehtml::document>& in_doc ) override;
 
-        void                    get_media_features( litehtml::media_features& outMedia ) const override;
-        void                    get_language( std::string& outLanguage, std::string& outCulture ) const override;
-        std::string             resolve_color( const std::string& inColor ) const override;
+        void                    get_media_features( litehtml::media_features& out_media ) const override;
+        void                    get_language( std::string& out_language, std::string& out_culture ) const override;
+        std::string             resolve_color( const std::string& in_color ) const override;
 
 
     private://////////////////////////////////////////////////////////////////////////
 
 // this class API:
 
-        QPixmap                 loaded_image( const QString& inSrc, const QString& inBase ) const;
-        QUrl                    resolve_url( const QString& inSrc, const QString& inBase ) const;
+        QPixmap                 loaded_image( const QString& in_src, const QString& in_base ) const;
+        QUrl                    resolve_url( const QString& in_src, const QString& in_base ) const;
 
 
     private://////////////////////////////////////////////////////////////////////////
@@ -91,21 +92,21 @@ class qt_container final :
 
 // cached data:
 
-        clips_t                 mClips;
-mutable QHash<QUrl, QPixmap>    mImages;
-mutable std::mutex              mImagesLock;
+        clips_t                 clips_;
+mutable QHash<QUrl, QPixmap>    images_;
+mutable std::mutex              images_lock_;
 
 
 // properties:
 
-        QString                 mBaseURL;
-        QString                 mCaption;
-        QFont                   mDefaultFont;
-mutable QByteArray              mDefaultFontName;
+        QString                 base_url_;
+        QString                 caption_;
+        QFont                   default_font_;
+mutable QByteArray              default_font_name_;
 
 
 // references:
 
-        QPainter*               mpPainter {};
-        QPointer<QWidget>       mpWidget;
+        QPaintDevice*           paint_device_ {};
+        QPointer<qt_litehtml>   view_;
 };
