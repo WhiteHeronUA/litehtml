@@ -266,47 +266,37 @@ void qt_container::draw_list_marker( uint_ptr in_dc, const list_marker& in_marke
 }
 
 /**********************************************************************************************/
-void qt_container::load_image( const char* in_src, const char* in_base, bool in_redraw_on_ready )
+void qt_container::load_image( const char* in_src, const char* in_base, bool /*in_redraw_on_ready*/ )
 {
     const auto url = resolve_url( in_src, in_base );
-
-    const std::lock_guard _ { images_lock_ };
 
     if( images_.contains( url ) )
         return;
 
-    if( url.isLocalFile() )
-    {
-        QPixmap image;
-        image.load( url.fileName() );
+    QPixmap image;
 
-        images_.insert( url, image );
+    if( view_ )
+    {
+        image.loadFromData( view_->loadData( url ) );
+    }
+    else if( url.isLocalFile() )
+    {
+        image.load( url.fileName() );
     }
     else
     {
-        auto* const nm = new QNetworkAccessManager;
-        nm->get( QNetworkRequest( url ) );
+        QNetworkAccessManager nm;
+        auto* const           reply = nm.get( QNetworkRequest( url ) );
 
-        QObject::connect( nm, &QNetworkAccessManager::finished, this, [in_redraw_on_ready, nm, url, this]( QNetworkReply* inReply )
-        {
-            {
-                const std::lock_guard _ { images_lock_ };
+        QEventLoop loop;
+        connect( reply, &QNetworkReply::finished, &loop, &QEventLoop::quit );
+        loop.exec();
 
-                QPixmap image;
-                image.loadFromData( inReply->readAll() );
-
-                images_.insert( url, image );
-
-            }
-
-            // TODO(I.N.): update layout?
-            if( in_redraw_on_ready && view_ )
-                view_->update();
-
-            inReply->deleteLater();
-            nm->deleteLater();
-        } );
+        image.loadFromData( reply->readAll() );
+        reply->deleteLater();
     }
+
+    images_.insert( url, image );
 }
 
 /**********************************************************************************************/
@@ -322,14 +312,93 @@ void qt_container::get_image_size( const char* in_src, const char* in_base, size
 void qt_container::draw_background( uint_ptr in_dc, const std::vector<background_paint>& in_back )
 {
     auto* const painter = reinterpret_cast<QPainter*>( in_dc );
-    const auto& back    = in_back.back();
 
-    painter->save();
-    painter->setClipRect( ToQRect( back.clip_box ) );
+    // BACKGROUND COLOR
 
-    painter->setBrush( ToQColor( back.color ) );
-    painter->setPen( Qt::NoPen );
-    painter->drawRect( ToQRect( back.border_box ) );
+    {
+        const auto& back = in_back.back();
+
+        painter->save();
+        painter->setClipRect( ToQRect( back.clip_box ) );
+
+        painter->setBrush( ToQColor( back.color ) );
+        painter->setPen( Qt::NoPen );
+        painter->drawRect( ToQRect( back.border_box ) );
+    }
+
+    // IMAGES
+
+    const int count = (int) in_back.size();
+    for( int i = count - 1 ; i >= 0 ; --i )
+    {
+        const auto& back = in_back[ i ];
+
+        if( !back.image.empty() && back.image_size.height > 0 && back.image_size.width > 0 )
+        {
+            if( const QPixmap pixmap = loaded_image( back.image.data(), back.baseurl.data() ); !pixmap.isNull() )
+            {
+                switch( back.repeat )
+                {
+                    case background_repeat_no_repeat    :
+                    {
+                        painter->drawPixmap(
+                            back.position_x,
+                            back.position_y,
+                            back.image_size.width,
+                            back.image_size.height,
+                            pixmap );
+                    }
+                    break;
+
+                    case background_repeat_repeat       :
+                    {
+                        for( int x = back.border_box.x; x <= back.border_box.right(); x += back.image_size.width )
+                        {
+                            for( int y = back.border_box.y; y <= back.border_box.bottom(); y += back.image_size.height )
+                            {
+                                painter->drawPixmap(
+                                    x,
+                                    y,
+                                    back.image_size.width,
+                                    back.image_size.height,
+                                    pixmap );
+                            }
+                        }
+                    }
+                    break;
+
+                    case background_repeat_repeat_x     :
+                    {
+                        for( int x = back.border_box.x; x <= back.border_box.right(); x += back.image_size.width )
+                        {
+                            painter->drawPixmap(
+                                x,
+                                back.border_box.y,
+                                back.image_size.width,
+                                back.image_size.height,
+                                pixmap );
+                        }
+                    }
+                    break;
+
+                    case background_repeat_repeat_y     :
+                    {
+                        for( int y = back.border_box.y; y <= back.border_box.bottom(); y += back.image_size.height )
+                        {
+                            painter->drawPixmap(
+                                back.border_box.x,
+                                y,
+                                back.image_size.width,
+                                back.image_size.height,
+                                pixmap );
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
     painter->restore();
 }
 
@@ -404,27 +473,32 @@ QPixmap qt_container::loaded_image( const QString& in_src, const QString& in_bas
 {
     const auto url = resolve_url( in_src, in_base );
 
-    const std::lock_guard _ { images_lock_ };
-
     return images_.value( url );
 }
 
 /**********************************************************************************************/
 QUrl qt_container::resolve_url( const QString& in_src, const QString& in_base ) const
 {
-    QUrl src( in_src );
-
     // Anchor
+    QUrl src( in_src );
     if( in_src.startsWith( '#' ) )
         return src;
+
+    // Net-path
+    const QUrl base( in_base.isEmpty() ? base_url_ : in_base );
+    if( in_src.startsWith( "//" ) )
+    {
+        if( in_base.isEmpty() )
+            return { "https:" + in_src };
+
+        return { QUrl( in_base ).scheme() + ":" + in_src };
+    }
 
     // Full URL with scheme
     if( !src.scheme().isEmpty() )
         return src;
 
     // Resolve
-    const QUrl base( in_base.isEmpty() ? base_url_ : in_base );
-
     return base.resolved( in_src );
 }
 
@@ -446,13 +520,28 @@ void qt_container::link( const std::shared_ptr<document>& /*in_doc*/, const elem
 }
 
 /**********************************************************************************************/
-void qt_container::on_anchor_click( const char* /*in_url*/, const litehtml::element::ptr& /*in_el*/ )
+void qt_container::on_anchor_click( const char* in_url, const litehtml::element::ptr& /*in_el*/ )
 {
+    if( view_ )
+        view_->setURL( resolve_url( in_url, base_url_ ) );
 }
 
 /**********************************************************************************************/
-void qt_container::set_cursor( const char* /*in_cursor*/ )
+void qt_container::set_cursor( const char* in_cursor )
 {
+    if( view_ )
+    {
+        QCursor cr;
+
+        // TODO(I.N.): https://developer.mozilla.org/en-US/docs/Web/CSS/cursor
+
+        if( !strcmp( in_cursor, "pointer" ) )
+            cr = Qt::PointingHandCursor;
+        else if( !strcmp( in_cursor, "text" ) )
+            cr = Qt::IBeamCursor;
+
+        view_->viewport()->setCursor( cr );
+    }
 }
 
 /**********************************************************************************************/
@@ -490,11 +579,19 @@ void qt_container::transform_text( std::string& io_text, text_transform in_tt )
 /**********************************************************************************************/
 void qt_container::import_css( std::string& out_text, const std::string& in_url, std::string& io_base )
 {
-    const QUrl url = resolve_url( in_url.c_str(), io_base.c_str() );
+    QString base = io_base.c_str();
+    if( base.isEmpty() )
+        base = base_url_;
+
+    const QUrl url = resolve_url( in_url.c_str(), base );
 
     io_base = url.toString( QUrl::None ).section( '/', 0, -2 ).toUtf8().data();
 
-    if( url.isLocalFile() )
+    if( view_ )
+    {
+        out_text = view_->loadData( url ).data();
+    }
+    else if( url.isLocalFile() )
     {
         QFile f( url.toLocalFile() );
         f.open( QIODevice::ReadOnly );

@@ -4,6 +4,7 @@ TEMPLATE  = app
 
 HEADERS += \
     containers/qt/qt_container.h \
+    containers/qt/qt_litehtml.h \
     include/litehtml.h \
     include/litehtml/background.h \
     include/litehtml/borders.h \
@@ -87,6 +88,7 @@ HEADERS += \
 SOURCES += \
     containers/qt/main.cpp \
     containers/qt/qt_container.cpp \
+    containers/qt/qt_litehtml.cpp \
     src/codepoint.cpp \
     src/css_borders.cpp \
     src/css_length.cpp \

@@ -99,7 +99,6 @@ static  QPixmap                 render( const char* in_html, int in_width );
 
         clips_t                 clips_;
 mutable QHash<QUrl, QPixmap>    images_;
-mutable std::mutex              images_lock_;
 
 
 // properties:
