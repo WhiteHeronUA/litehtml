@@ -1,8 +1,8 @@
 CONFIG   += c++20 staticlib
-QT       -= core gui
 TEMPLATE  = lib
 
 HEADERS += \
+    containers/qt/qt_container.h \
     include/litehtml.h \
     include/litehtml/background.h \
     include/litehtml/borders.h \
@@ -63,7 +63,6 @@ HEADERS += \
     include/litehtml/url_path.h \
     include/litehtml/utf8_strings.h \
     include/litehtml/web_color.h \
-    src/gumbo/char_ref.rl \
     src/gumbo/include/gumbo.h \
     src/gumbo/include/gumbo/attribute.h \
     src/gumbo/include/gumbo/char_ref.h \
@@ -85,6 +84,7 @@ HEADERS += \
     src/gumbo/visualc/include/strings.h
 
 SOURCES += \
+    containers/qt/qt_container.cpp \
     src/codepoint.cpp \
     src/css_borders.cpp \
     src/css_length.cpp \
