@@ -547,7 +547,7 @@ QUrl qt_container::resolve_url( const QString& in_src, const QString& in_base ) 
 
     // Absolute
     if( prepared_src.startsWith( '/' ) )
-        base.setPath( prepared_src );
+        base = QUrl( base.toString( QUrl::RemovePath | QUrl::RemoveQuery ) + prepared_src );
     // Relative
     else
         base = QUrl( base.toString() + "/" + prepared_src );
