@@ -222,7 +222,7 @@ void qt_litehtml::paintEvent( QPaintEvent* in_event )
     if( document_ )
     {
         QPainter p( viewport() );
-        p.setRenderHints( QPainter::SmoothPixmapTransform );
+        p.setRenderHints( QPainter::Antialiasing | QPainter::SmoothPixmapTransform );
         p.setWorldTransform( QTransform::fromScale( zoom_, zoom_ ) );
 
         const int x = horizontalScrollBar()->value();

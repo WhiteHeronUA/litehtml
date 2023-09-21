@@ -44,7 +44,7 @@ class qt_container :
         void                    load_image( const char* in_src, const char* in_base, bool in_redraw_on_ready ) override;
         void                    get_image_size( const char* in_src, const char* in_base, litehtml::size& out_size ) override;
         void                    draw_background( litehtml::uint_ptr in_dc, const std::vector<litehtml::background_paint>& in_back ) override;
-        void                    draw_borders( litehtml::uint_ptr in_dc, const litehtml::borders& in_borders, const litehtml::position& in_draw_pos, bool in_root ) override;
+        void                    draw_borders( litehtml::uint_ptr in_dc, const litehtml::borders& in_borders, const litehtml::position& in_pos, bool in_root ) override;
         void                    set_caption( const char* in_caption ) override;
         void                    set_base_url( const char* in_base_url ) override;
         void                    link( const std::shared_ptr<litehtml::document>& in_doc, const litehtml::element::ptr& in_el ) override;

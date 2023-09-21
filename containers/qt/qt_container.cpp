@@ -43,6 +43,42 @@ static inline QColor to_qcolor( const web_color& in_color )
 }
 
 /**********************************************************************************************/
+static QPainterPath to_qpath(
+    const position&        in_pos,
+    const border_radiuses& in_radius )
+{
+    QPainterPath path;
+
+    //   _____________
+    path.moveTo( in_pos.x + in_radius.top_left_x * 2, in_pos.y );
+    path.lineTo( in_pos.right() - in_radius.top_right_x * 2, in_pos.y );
+
+    //                 \-
+    path.arcTo( in_pos.right() - in_radius.top_right_x * 2, in_pos.y, in_radius.top_right_x * 2, in_radius.top_right_y * 2, 90, -90 );
+
+    //                  |
+    path.lineTo( in_pos.right(), in_pos.bottom() - in_radius.bottom_right_y * 2 );
+
+    //                 /-
+    path.arcTo( in_pos.right() - in_radius.bottom_right_x * 2, in_pos.bottom() - in_radius.bottom_right_y * 2, in_radius.bottom_right_x * 2, in_radius.bottom_right_y * 2, 0, -90 );
+
+    //   -------------
+    path.lineTo( in_pos.x + in_radius.bottom_left_x * 2, in_pos.bottom() );
+
+    // \-
+    path.arcTo( in_pos.x, in_pos.bottom() - in_radius.bottom_left_y * 2, in_radius.bottom_left_x * 2, in_radius.bottom_left_y * 2, 270, -90 );
+
+    // |
+    path.lineTo( in_pos.x, in_pos.y + in_radius.top_left_y * 2 );
+
+    // /
+    path.arcTo( in_pos.x, in_pos.y, in_radius.top_left_x * 2, in_radius.top_left_y * 2, 180, -90 );
+
+    path.closeSubpath();
+    return path;
+}
+
+/**********************************************************************************************/
 static inline QPen to_qpen( const litehtml::border& in_border )
 {
     Qt::PenStyle style { Qt::NoPen };
@@ -296,7 +332,9 @@ void qt_container::load_image( const char* in_src, const char* in_base, bool /*i
         return;
 
     QPixmap image;
-    image.loadFromData( load_data( url ) );
+    if( !image.loadFromData( load_data( url ) ) )
+        on_error( QString( "'load_image' failed: " ) + url.toString() );
+
     images_.insert( url, image );
 }
 
@@ -314,17 +352,26 @@ void qt_container::draw_background( uint_ptr in_dc, const std::vector<background
 {
     auto* const painter = reinterpret_cast<QPainter*>( in_dc );
 
-    // BACKGROUND COLOR
+    // COLOR
 
     {
         const auto& back = in_back.back();
 
         painter->save();
-        painter->setClipRect( to_qrect( back.clip_box ) );
+
+        apply_clip( painter );
+        painter->setClipRect( to_qrect( back.clip_box ), Qt::IntersectClip );
 
         painter->setBrush( to_qcolor( back.color ) );
         painter->setPen( Qt::NoPen );
-        painter->drawRect( to_qrect( back.border_box ) );
+
+        auto path = to_qpath( back.border_box, back.border_radius );
+        if( painter->renderHints() & QPainter::Antialiasing )
+            path.translate( .5F, .5F );
+
+        painter->drawPath( path );
+
+        painter->restore();
     }
 
     // IMAGES
@@ -338,6 +385,11 @@ void qt_container::draw_background( uint_ptr in_dc, const std::vector<background
         {
             if( const QPixmap pixmap = loaded_image( back.image.data(), back.baseurl.data() ); !pixmap.isNull() )
             {
+                painter->save();
+
+                apply_clip( painter );
+                painter->setClipRect( to_qrect( back.clip_box ), Qt::IntersectClip );
+
                 switch( back.repeat )
                 {
                     case background_repeat_no_repeat    :
@@ -396,41 +448,64 @@ void qt_container::draw_background( uint_ptr in_dc, const std::vector<background
                     }
                     break;
                 }
+
+                painter->restore();
             }
         }
     }
-
-    painter->restore();
 }
 
 /**********************************************************************************************/
-void qt_container::draw_borders( uint_ptr in_dc, const borders& in_borders, const position& in_draw_pos, bool /*in_root*/ )
+void qt_container::draw_borders( uint_ptr in_dc, const borders& in_borders, const position& in_pos, bool /*in_root*/ )
 {
     auto* const painter = reinterpret_cast<QPainter*>( in_dc );
 
+    painter->save();
+
+    apply_clip( painter );
+
+    if( painter->renderHints() & QPainter::Antialiasing )
+        painter->translate( .5F, .5F );
+
+    const auto& radius = in_borders.radius;
+
+    //  /_____________\-
     if( const auto penTop = to_qpen( in_borders.top ); penTop.style() != Qt::NoPen )
     {
         painter->setPen( penTop );
-        painter->drawLine( in_draw_pos.left(), in_draw_pos.top(), in_draw_pos.right(), in_draw_pos.top() );
+
+        painter->drawArc( in_pos.x, in_pos.y, radius.top_left_x * 2, radius.top_left_y * 2, 180 * 16, -90 * 16 );
+        painter->drawLine( in_pos.x + radius.top_left_x, in_pos.y, in_pos.right() - radius.top_right_x, in_pos.y );
+        painter->drawArc( in_pos.right() - radius.top_right_x * 2, in_pos.y, radius.top_right_x * 2, radius.top_right_y * 2, 90 * 16, -90 * 16 );
     }
 
-    if( const auto penLeft = to_qpen( in_borders.left ) ; penLeft.style() != Qt::NoPen )
-    {
-        painter->setPen( penLeft );
-        painter->drawLine( in_draw_pos.left(), in_draw_pos.top(), in_draw_pos.left(), in_draw_pos.bottom() );
-    }
-
-    if( const auto penBottom = to_qpen( in_borders.bottom ) ; penBottom.style() != Qt::NoPen )
+    //  \_____________/
+    if( const auto penBottom = to_qpen( in_borders.bottom ); penBottom.style() != Qt::NoPen )
     {
         painter->setPen( penBottom );
-        painter->drawLine( in_draw_pos.left(), in_draw_pos.bottom(), in_draw_pos.right(), in_draw_pos.bottom() );
+
+        painter->drawArc( in_pos.x, in_pos.bottom() - radius.bottom_left_y * 2, radius.bottom_left_x * 2, radius.bottom_left_y * 2, 270 * 16, -90 * 16 );
+        painter->drawLine( in_pos.x + radius.bottom_left_x, in_pos.bottom(), in_pos.right() - radius.bottom_right_x, in_pos.bottom() );
+        painter->drawArc( in_pos.right() - radius.bottom_right_x * 2, in_pos.bottom() - radius.bottom_right_y * 2, radius.bottom_right_x * 2, radius.bottom_right_y * 2, 0, -90 * 16 );
     }
 
-    if( const auto penRight = to_qpen( in_borders.right ) ; penRight.style() != Qt::NoPen )
+    // |
+    if( const auto penLeft = to_qpen( in_borders.left ); penLeft.style() != Qt::NoPen )
+    {
+        painter->setPen( penLeft );
+
+        painter->drawLine( in_pos.x, in_pos.y + radius.top_left_y, in_pos.x, in_pos.bottom() - radius.bottom_left_y );
+    }
+
+    //                  |
+    if( const auto penRight = to_qpen( in_borders.right ); penRight.style() != Qt::NoPen )
     {
         painter->setPen( penRight );
-        painter->drawLine( in_draw_pos.right(), in_draw_pos.top(), in_draw_pos.right(), in_draw_pos.bottom() );
+
+        painter->drawLine( in_pos.right(), in_pos.y + radius.top_right_y, in_pos.right(), in_pos.bottom() - radius.bottom_right_y );
     }
+
+    painter->restore();
 }
 
 
