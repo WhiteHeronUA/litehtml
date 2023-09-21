@@ -106,7 +106,6 @@ mutable QHash<QUrl, QPixmap>    images_;
 // properties:
 
         QString                 base_url_;
-        QString                 caption_;
         QFont                   default_font_;
 mutable QByteArray              default_font_name_;
 

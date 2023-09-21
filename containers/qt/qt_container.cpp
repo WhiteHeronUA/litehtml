@@ -508,6 +508,185 @@ void qt_container::draw_borders( uint_ptr in_dc, const borders& in_borders, cons
     painter->restore();
 }
 
+/**********************************************************************************************/
+void qt_container::set_caption( const char* in_caption )
+{
+    if( view_ )
+        view_->setWindowTitle( in_caption );
+}
+
+/**********************************************************************************************/
+void qt_container::set_base_url( const char* in_base_url )
+{
+    base_url_ = in_base_url;
+}
+
+/**********************************************************************************************/
+void qt_container::link( const std::shared_ptr<document>& /*in_doc*/, const element::ptr& /*in_el*/ )
+{
+}
+
+/**********************************************************************************************/
+void qt_container::on_anchor_click( const char* in_url, const litehtml::element::ptr& /*in_el*/ )
+{
+    if( view_ )
+        view_->onAnchorClicked( resolve_url( in_url, base_url_ ) );
+}
+
+/**********************************************************************************************/
+void qt_container::set_cursor( const char* in_cursor )
+{
+    if( view_ )
+    {
+        QCursor cr;
+
+        // TODO(I.N.): https://developer.mozilla.org/en-US/docs/Web/CSS/cursor
+
+        if( !strcmp( in_cursor, "pointer" ) )
+            cr = Qt::PointingHandCursor;
+        else if( !strcmp( in_cursor, "text" ) )
+            cr = Qt::IBeamCursor;
+        else if( !strcmp( in_cursor, "help" ) )
+            cr = Qt::WhatsThisCursor;
+        else if( !strcmp( in_cursor, "progress" ) )
+            cr = Qt::WaitCursor;
+        else if( !strcmp( in_cursor, "wait" ) )
+            cr = Qt::BusyCursor;
+        else if( !strcmp( in_cursor, "crosshair" ) )
+            cr = Qt::CrossCursor;
+        else if( !strcmp( in_cursor, "alias" ) )
+            cr = Qt::DragLinkCursor;
+        else if( !strcmp( in_cursor, "copy" ) )
+            cr = Qt::DragCopyCursor;
+        else if( !strcmp( in_cursor, "move" ) )
+            cr = Qt::DragMoveCursor;
+        else if( !strcmp( in_cursor, "no-drop" ) || !strcmp( in_cursor, "not-allowed" ) )
+            cr = Qt::ForbiddenCursor;
+        else if( !strcmp( in_cursor, "grab" ) )
+            cr = Qt::OpenHandCursor;
+        else if( !strcmp( in_cursor, "grabbing" ) )
+            cr = Qt::ClosedHandCursor;
+        else if( !strcmp( in_cursor, "col-resize" ) )
+            cr = Qt::SizeHorCursor;
+        else if( !strcmp( in_cursor, "row-resize" ) )
+            cr = Qt::SizeVerCursor;
+        else if( !strcmp( in_cursor, "n-resize" ) )
+            cr = Qt::UpArrowCursor;
+        else if( !strcmp( in_cursor, "ew-resize" ) )
+            cr = Qt::SizeHorCursor;
+        else if( !strcmp( in_cursor, "ns-resize" ) )
+            cr = Qt::SizeVerCursor;
+        else if( !strcmp( in_cursor, "nesw-resize" ) )
+            cr = Qt::SizeBDiagCursor;
+        else if( !strcmp( in_cursor, "nwse-resize" ) )
+            cr = Qt::SizeFDiagCursor;
+
+        view_->viewport()->setCursor( cr );
+    }
+}
+
+/**********************************************************************************************/
+void qt_container::transform_text( std::string& io_text, text_transform in_tt )
+{
+    switch( in_tt )
+    {
+        case text_transform_capitalize  :
+        {
+            auto s = QString::fromStdString( io_text ).toLower();
+            if( !s.isEmpty() )
+            {
+                s.front() = s.front().toUpper();
+                io_text = s.toUtf8().data();
+            }
+        }
+        break;
+
+        case text_transform_uppercase   :
+        {
+            io_text = QString::fromStdString( io_text ).toUpper().toUtf8().data();
+        }
+        break;
+
+        case text_transform_lowercase   :
+        {
+            io_text = QString::fromStdString( io_text ).toLower().toUtf8().data();
+        }
+        break;
+
+        case text_transform_none        :;
+    }
+}
+
+/**********************************************************************************************/
+void qt_container::import_css( std::string& out_text, const std::string& in_url, std::string& io_base )
+{
+    QString base = io_base.c_str();
+    if( base.isEmpty() )
+        base = base_url_;
+
+    const QUrl url = resolve_url( in_url.c_str(), base );
+
+    io_base  = url.toString( QUrl::None ).section( '/', 0, -2 ).toUtf8().data();
+    out_text = load_data( url ).data();
+}
+
+/**********************************************************************************************/
+void qt_container::set_clip( const position& in_os, const border_radiuses& in_radius )
+{
+    //clips_.emplaceBack( in_os, in_radius );
+    (void) in_os;
+    (void) in_radius;
+}
+
+/**********************************************************************************************/
+void qt_container::del_clip()
+{
+    if( !clips_.empty() )
+        clips_.pop_back();
+}
+
+/**********************************************************************************************/
+void qt_container::get_client_rect( position& out_client ) const
+{
+    if( paint_device_ )
+    {
+        out_client.x      = 0;
+        out_client.y      = 0;
+        out_client.width  = paint_device_->width();
+        out_client.height = paint_device_->height();
+    }
+}
+
+/**********************************************************************************************/
+element::ptr qt_container::create_element(
+    const char* /*in_tag_name*/,
+    const string_map& /*in_attributes*/,
+    const std::shared_ptr<document>& /*in_doc*/ )
+{
+    return {};
+}
+
+/**********************************************************************************************/
+void qt_container::get_media_features( media_features& out_media ) const
+{
+    out_media.type = litehtml::media_type_screen;
+}
+
+/**********************************************************************************************/
+void qt_container::get_language( std::string& /*out_language*/, std::string& /*out_culture*/ ) const
+{
+}
+
+/**********************************************************************************************/
+std::string qt_container::resolve_color( const std::string& in_color ) const
+{
+    const QColor c( in_color.c_str() );
+    if( c.isValid() )
+        return c.name().toUtf8().data();
+
+    return {};
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 #pragma mark -
@@ -628,148 +807,4 @@ QUrl qt_container::resolve_url( const QString& in_src, const QString& in_base ) 
         base = QUrl( base.toString() + "/" + prepared_src );
 
     return base.adjusted( QUrl::FullyEncoded | QUrl::NormalizePathSegments );
-}
-
-/**********************************************************************************************/
-void qt_container::set_caption( const char* in_caption )
-{
-    caption_ = in_caption;
-}
-
-/**********************************************************************************************/
-void qt_container::set_base_url( const char* in_base_url )
-{
-    base_url_ = in_base_url;
-}
-
-/**********************************************************************************************/
-void qt_container::link( const std::shared_ptr<document>& /*in_doc*/, const element::ptr& /*in_el*/ )
-{
-}
-
-/**********************************************************************************************/
-void qt_container::on_anchor_click( const char* in_url, const litehtml::element::ptr& /*in_el*/ )
-{
-    if( view_ )
-        view_->setURL( resolve_url( in_url, base_url_ ) );
-}
-
-/**********************************************************************************************/
-void qt_container::set_cursor( const char* in_cursor )
-{
-    if( view_ )
-    {
-        QCursor cr;
-
-        // TODO(I.N.): https://developer.mozilla.org/en-US/docs/Web/CSS/cursor
-
-        if( !strcmp( in_cursor, "pointer" ) )
-            cr = Qt::PointingHandCursor;
-        else if( !strcmp( in_cursor, "text" ) )
-            cr = Qt::IBeamCursor;
-
-        view_->viewport()->setCursor( cr );
-    }
-}
-
-/**********************************************************************************************/
-void qt_container::transform_text( std::string& io_text, text_transform in_tt )
-{
-    switch( in_tt )
-    {
-        case text_transform_capitalize  :
-        {
-            auto s = QString::fromStdString( io_text ).toLower();
-            if( !s.isEmpty() )
-            {
-                s.front() = s.front().toUpper();
-                io_text = s.toUtf8().data();
-            }
-        }
-        break;
-
-        case text_transform_uppercase   :
-        {
-            io_text = QString::fromStdString( io_text ).toUpper().toUtf8().data();
-        }
-        break;
-
-        case text_transform_lowercase   :
-        {
-            io_text = QString::fromStdString( io_text ).toLower().toUtf8().data();
-        }
-        break;
-
-        case text_transform_none        :;
-    }
-}
-
-/**********************************************************************************************/
-void qt_container::import_css( std::string& out_text, const std::string& in_url, std::string& io_base )
-{
-    QString base = io_base.c_str();
-    if( base.isEmpty() )
-        base = base_url_;
-
-    const QUrl url = resolve_url( in_url.c_str(), base );
-
-    io_base  = url.toString( QUrl::None ).section( '/', 0, -2 ).toUtf8().data();
-    out_text = load_data( url ).data();
-}
-
-/**********************************************************************************************/
-void qt_container::set_clip( const position& in_os, const border_radiuses& in_radius )
-{
-    //clips_.emplaceBack( in_os, in_radius );
-    (void) in_os;
-    (void) in_radius;
-}
-
-/**********************************************************************************************/
-void qt_container::del_clip()
-{
-    if( !clips_.empty() )
-        clips_.pop_back();
-}
-
-/**********************************************************************************************/
-void qt_container::get_client_rect( position& out_client ) const
-{
-    if( paint_device_ )
-    {
-        out_client.x      = 0;
-        out_client.y      = 0;
-        out_client.width  = paint_device_->width();
-        out_client.height = paint_device_->height();
-    }
-}
-
-/**********************************************************************************************/
-element::ptr qt_container::create_element(
-    const char* /*in_tag_name*/,
-    const string_map& /*in_attributes*/,
-    const std::shared_ptr<document>& /*in_doc*/ )
-{
-    return {};
-}
-
-/**********************************************************************************************/
-void qt_container::get_media_features( media_features& out_media ) const
-{
-    out_media.type = litehtml::media_type_screen;
-}
-
-/**********************************************************************************************/
-void qt_container::get_language( std::string& /*out_language*/, std::string& /*out_culture*/ ) const
-{
-}
-
-/**********************************************************************************************/
-std::string qt_container::resolve_color( const std::string& in_color ) const
-{
-    const QColor c( in_color.c_str() );
-    if( c.isValid() )
-        return c.name().toUtf8().data();
-
-    return {};
 }

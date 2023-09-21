@@ -42,7 +42,7 @@ class qt_litehtml : public QAbstractScrollArea
 
         void                                setHtml( const char* in_html );
 
-virtual void                                setURL( QUrl in_url );
+virtual void                                setURL( const QUrl& in_url );
         QUrl                                url() const { return url_; }
 
         void                                setZoom( double in_zoom );
@@ -53,6 +53,7 @@ virtual void                                setURL( QUrl in_url );
 
     protected://////////////////////////////////////////////////////////////////////////
 
+virtual void                                onAnchorClicked( const QUrl& in_url ) { setURL( in_url ); }
 virtual void                                onError( const QString& in_msg );
 virtual QByteArray                          loadData( const QUrl& in_url );
 

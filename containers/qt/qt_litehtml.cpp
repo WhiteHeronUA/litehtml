@@ -298,7 +298,7 @@ void qt_litehtml::setHtml( const char* in_html )
 }
 
 /**********************************************************************************************/
-void qt_litehtml::setURL( QUrl in_url )
+void qt_litehtml::setURL( const QUrl& in_url )
 {
     // Anchor
     if( auto name = in_url.toString(); name.startsWith( '#' ) )
