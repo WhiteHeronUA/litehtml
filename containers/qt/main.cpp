@@ -54,13 +54,8 @@ table, th, td {
 
 <hr>
 
-<h2>Absolute URLs</h2>
 <p><a href="https://www.google.com/">Google</a></p>
-<p><a href="https://www.ukr.net/">Ukr.Net</a></p>
-
-<h2>Relative URLs</h2>
-<p><a href="html_images.asp">HTML Images</a></p>
-<p><a href="/css/default.asp">CSS Tutorial</a></p>
+<p><a href="https://valentina-db.com/docs/dokuwiki/v13/doku.php">ValentinaDB</a></p>
 
 </body>
 </html>

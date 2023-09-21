@@ -37,6 +37,9 @@ class qt_litehtml : public QAbstractScrollArea
 
 // this class API:
 
+        QFont                               defaultFont() const;
+        void                                setDefaultFont( const QFont& in_font );
+
         void                                setHtml( const char* in_html );
 
 virtual void                                setURL( QUrl in_url );

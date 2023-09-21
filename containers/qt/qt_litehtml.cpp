@@ -42,7 +42,7 @@ qt_litehtml::qt_litehtml( QWidget* in_parent )
 :
     QAbstractScrollArea( in_parent )
 ,
-    container_( std::make_unique<qt_container>( this ) )
+    container_( new qt_container( this ) )
 {
     setMouseTracking( true );
 
@@ -278,6 +278,19 @@ void qt_litehtml::wheelEvent( QWheelEvent* in_event )
 
 
 /**********************************************************************************************/
+QFont qt_litehtml::defaultFont() const
+{
+    return container_->defaultFont();
+}
+
+/**********************************************************************************************/
+void qt_litehtml::setDefaultFont( const QFont& in_font )
+{
+    container_->setDefaultFont( in_font );
+    render();
+}
+
+/**********************************************************************************************/
 void qt_litehtml::setHtml( const char* in_html )
 {
     document_ = document::createFromString( in_html, container_.get(), litehtml::master_css );
@@ -383,7 +396,7 @@ QByteArray qt_litehtml::loadData( const QUrl& in_url )
 
     QEventLoop loop;
     connect( reply, &QNetworkReply::finished, &loop, &QEventLoop::quit );
-    loop.exec();
+    loop.exec( QEventLoop::ExcludeUserInputEvents );
 
     reply->deleteLater();
     return reply->readAll();

@@ -1,8 +1,5 @@
 #pragma once
 
-// STD
-#include <mutex>
-
 // LITEHTML
 #include "../../include/litehtml.h"
 
@@ -20,17 +17,10 @@ class qt_litehtml;
 
 
 /**********************************************************************************************/
-class qt_container final :
+class qt_container :
     public litehtml::document_container,
     public QObject
 {
-    public://////////////////////////////////////////////////////////////////////////
-
-                                qt_container() = default;
-                                qt_container( QPaintDevice* in_paint_device );
-                                qt_container( qt_litehtml* in_view );
-
-
     public://////////////////////////////////////////////////////////////////////////
 
 // document_container API:
@@ -79,6 +69,9 @@ class qt_container final :
 
 // this class API:
 
+        QFont                   defaultFont() const { return default_font_; }
+        void                    setDefaultFont( const QFont& in_font ) { default_font_ = in_font; }
+
 static  QPixmap                 render( const char* in_html, int in_width );
 
 
@@ -86,6 +79,12 @@ static  QPixmap                 render( const char* in_html, int in_width );
 
         QPixmap                 loaded_image( const QString& in_src, const QString& in_base ) const;
         QUrl                    resolve_url( const QString& in_src, const QString& in_base ) const;
+
+
+    protected://////////////////////////////////////////////////////////////////////////
+
+                                qt_container( QPaintDevice* in_paint_device );
+                                qt_container( qt_litehtml* in_view );
 
 
     private://////////////////////////////////////////////////////////////////////////
@@ -113,4 +112,9 @@ mutable QByteArray              default_font_name_;
 
         QPaintDevice*           paint_device_ {};
         QPointer<qt_litehtml>   view_;
+
+
+    protected://////////////////////////////////////////////////////////////////////////
+
+        friend class qt_litehtml;
 };

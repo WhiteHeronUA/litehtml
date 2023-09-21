@@ -130,7 +130,7 @@ uint_ptr qt_container::create_font(
     r->setFamilies( families );
 
     // Size
-    r->setPixelSize( in_size );
+    r->setPointSize( in_size );
 
     // Weight
     r->setWeight( QFont::Weight( in_weight ) );
@@ -190,15 +190,9 @@ void qt_container::draw_text( uint_ptr in_dc, const char* in_text, uint_ptr in_f
 int qt_container::pt_to_px( int in_pt ) const
 {
     if( paint_device_ )
-    {
-        const auto ld = paint_device_->logicalDpiY();
-        const auto pd = paint_device_->physicalDpiY();
+        return int( in_pt / 72. * paint_device_->physicalDpiX() );
 
-        if( ld )
-            return int( in_pt * pd * 11. / ld / 12 + .5 );
-    }
-
-    return 1;
+    return int( in_pt / 72. * 96. );
 }
 
 /**********************************************************************************************/
@@ -290,7 +284,7 @@ void qt_container::load_image( const char* in_src, const char* in_base, bool /*i
 
         QEventLoop loop;
         connect( reply, &QNetworkReply::finished, &loop, &QEventLoop::quit );
-        loop.exec();
+        loop.exec( QEventLoop::ExcludeUserInputEvents );
 
         image.loadFromData( reply->readAll() );
         reply->deleteLater();
