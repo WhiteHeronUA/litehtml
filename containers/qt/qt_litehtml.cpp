@@ -402,10 +402,9 @@ QByteArray qt_litehtml::loadData( const QUrl& in_url )
         return r;
     }
 
-    if( !network_manager_ )
-        network_manager_ = std::make_unique<QNetworkAccessManager>();
+    QNetworkAccessManager nm;
 
-    auto* const reply = network_manager_->get( QNetworkRequest( in_url ) );
+    auto* const reply = nm.get( QNetworkRequest( in_url ) );
 
     QEventLoop loop;
     connect( reply, &QNetworkReply::finished, &loop, &QEventLoop::quit );

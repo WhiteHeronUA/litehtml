@@ -5,9 +5,6 @@
 #include <QtWidgets/QAbstractScrollArea>
 
 /**********************************************************************************************/
-class QNetworkAccessManager;
-
-/**********************************************************************************************/
 namespace litehtml { class document; }
 
 /**********************************************************************************************/
@@ -74,9 +71,8 @@ virtual QByteArray                          loadData( const QUrl& in_url );
 
 // references:
 
-        std::unique_ptr<qt_container>           container_;
-        std::shared_ptr<litehtml::document>     document_;
-        std::unique_ptr<QNetworkAccessManager>  network_manager_;
+        std::unique_ptr<qt_container>       container_;
+        std::shared_ptr<litehtml::document> document_;
 
 
 // state:

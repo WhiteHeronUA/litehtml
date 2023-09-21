@@ -29,7 +29,7 @@ table, th, td {
 
 <p>Use the CSS border property to add a border to the table.</p>
 
-<table style="width:400px">
+<table style="width:100%">
   <tr>
     <th>Firstname</th>
     <th>Lastname</th>
@@ -56,6 +56,8 @@ table, th, td {
 
 <p><a href="https://www.google.com/">Google</a></p>
 <p><a href="https://valentina-db.com/docs/dokuwiki/v13/doku.php">ValentinaDB</a></p>
+<p><a href="https://www.kernel.org/">Kernel.Org</a></p>
+<p><a href="https://www.ukr.net/">Ukr.Net</a></p>
 
 </body>
 </html>

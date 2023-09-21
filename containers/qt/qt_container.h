@@ -10,7 +10,6 @@
 #include <QtWidgets/QWidget>
 
 /**********************************************************************************************/
-class QNetworkAccessManager;
 class QPainter;
 class QPixmap;
 
@@ -77,6 +76,11 @@ class qt_container :
 static  QPixmap                 render( const char* in_html, int in_width );
 
 
+    protected://////////////////////////////////////////////////////////////////////////
+
+virtual void                    on_error( const QString& in_msg );
+
+
     private://////////////////////////////////////////////////////////////////////////
 
         void                    apply_clip( QPainter* in_painter );
@@ -109,9 +113,8 @@ mutable QByteArray              default_font_name_;
 
 // references:
 
-        std::unique_ptr<QNetworkAccessManager>  network_manager_;
-        QPaintDevice*                           paint_device_ {};
-        QPointer<qt_litehtml>                   view_;
+        QPaintDevice*           paint_device_ {};
+        QPointer<qt_litehtml>   view_;
 
 
     protected://////////////////////////////////////////////////////////////////////////
