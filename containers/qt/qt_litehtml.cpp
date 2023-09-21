@@ -280,13 +280,13 @@ void qt_litehtml::wheelEvent( QWheelEvent* in_event )
 /**********************************************************************************************/
 QFont qt_litehtml::defaultFont() const
 {
-    return container_->defaultFont();
+    return container_->default_font();
 }
 
 /**********************************************************************************************/
 void qt_litehtml::setDefaultFont( const QFont& in_font )
 {
-    container_->setDefaultFont( in_font );
+    container_->set_default_font( in_font );
     render();
 }
 
@@ -381,25 +381,44 @@ void qt_litehtml::zoomOut()
 
 
 /**********************************************************************************************/
+void qt_litehtml::onError( const QString& in_msg )
+{
+    qWarning() << in_msg;
+}
+
+/**********************************************************************************************/
 QByteArray qt_litehtml::loadData( const QUrl& in_url )
 {
+    if( const auto it = cache_.find( in_url ); it != cache_.end() )
+        return it.value();
+
     if( url_.isLocalFile() )
     {
         QFile f( url_.toLocalFile() );
         f.open( QIODevice::ReadOnly );
 
-        return f.readAll();
+        auto r = f.readAll();
+        cache_.insert( in_url, r );
+        return r;
     }
 
-    QNetworkAccessManager nm;
-    auto* const           reply = nm.get( QNetworkRequest( in_url ) );
+    if( !network_manager_ )
+        network_manager_ = std::make_unique<QNetworkAccessManager>();
+
+    auto* const reply = network_manager_->get( QNetworkRequest( in_url ) );
 
     QEventLoop loop;
     connect( reply, &QNetworkReply::finished, &loop, &QEventLoop::quit );
     loop.exec( QEventLoop::ExcludeUserInputEvents );
 
+    if( reply->error() != QNetworkReply::NoError )
+        onError( reply->errorString() );
+
     reply->deleteLater();
-    return reply->readAll();
+
+    auto r = reply->readAll();
+    cache_.insert( in_url, r );
+    return r;
 }
 
 /**********************************************************************************************/

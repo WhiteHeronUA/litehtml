@@ -6,9 +6,11 @@
 // QT
 #include <QtCore/QPointer>
 #include <QtCore/QUrl>
+#include <QtGui/QPainterPath>
 #include <QtWidgets/QWidget>
 
 /**********************************************************************************************/
+class QNetworkAccessManager;
 class QPainter;
 class QPixmap;
 
@@ -69,14 +71,16 @@ class qt_container :
 
 // this class API:
 
-        QFont                   defaultFont() const { return default_font_; }
-        void                    setDefaultFont( const QFont& in_font ) { default_font_ = in_font; }
+        QFont                   default_font() const { return default_font_; }
+        void                    set_default_font( const QFont& in_font ) { default_font_ = in_font; }
 
 static  QPixmap                 render( const char* in_html, int in_width );
 
 
     private://////////////////////////////////////////////////////////////////////////
 
+        void                    apply_clip( QPainter* in_painter );
+        QByteArray              load_data( const QUrl& in_url );
         QPixmap                 loaded_image( const QString& in_src, const QString& in_base ) const;
         QUrl                    resolve_url( const QString& in_src, const QString& in_base ) const;
 
@@ -89,14 +93,9 @@ static  QPixmap                 render( const char* in_html, int in_width );
 
     private://////////////////////////////////////////////////////////////////////////
 
-        using clips_t = QList<std::pair<litehtml::position, litehtml::border_radiuses>>;
-
-
-    private://////////////////////////////////////////////////////////////////////////
-
 // cached data:
 
-        clips_t                 clips_;
+        QList<QPainterPath>     clips_;
 mutable QHash<QUrl, QPixmap>    images_;
 
 
@@ -110,8 +109,9 @@ mutable QByteArray              default_font_name_;
 
 // references:
 
-        QPaintDevice*           paint_device_ {};
-        QPointer<qt_litehtml>   view_;
+        std::unique_ptr<QNetworkAccessManager>  network_manager_;
+        QPaintDevice*                           paint_device_ {};
+        QPointer<qt_litehtml>                   view_;
 
 
     protected://////////////////////////////////////////////////////////////////////////

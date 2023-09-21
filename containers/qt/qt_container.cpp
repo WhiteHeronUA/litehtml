@@ -103,7 +103,7 @@ uint_ptr qt_container::create_font(
     {
         family = family.simplified();
 
-        if( family.startsWith( '"' ) && family.endsWith( '"' ) )
+        if( family.length() > 1 && family.startsWith( '"' ) && family.endsWith( '"' ) )
             family = family.sliced( 1, family.length() - 2 );
 
         if( r->styleHint() == QFont::AnyStyle )
@@ -181,9 +181,15 @@ void qt_container::draw_text( uint_ptr in_dc, const char* in_text, uint_ptr in_f
     auto* const font    = reinterpret_cast<QFont*>( in_font );
     auto* const painter = reinterpret_cast<QPainter*>( in_dc );
 
+    painter->save();
+
+    apply_clip( painter );
+
     painter->setFont( *font );
     painter->setPen( ToQColor( in_color ) );
     painter->drawText( ToQRect( in_pos ), 0, in_text );
+
+    painter->restore();
 }
 
 /**********************************************************************************************/
@@ -214,12 +220,17 @@ void qt_container::draw_list_marker( uint_ptr in_dc, const list_marker& in_marke
 {
     auto* const painter = reinterpret_cast<QPainter*>( in_dc );
 
+    painter->save();
+
+    apply_clip( painter );
+
     // Image
     if( !in_marker.image.empty() )
     {
         const QPixmap pixmap = loaded_image( in_marker.image.c_str(), in_marker.baseurl );
 
-        painter->drawPixmap( ToQRect( in_marker.pos ), pixmap );
+        if( !pixmap.isNull() )
+            painter->drawPixmap( ToQRect( in_marker.pos ), pixmap );
     }
     // Type
     else
@@ -229,7 +240,7 @@ void qt_container::draw_list_marker( uint_ptr in_dc, const list_marker& in_marke
 
         switch( in_marker.marker_type )
         {
-            case list_style_type_circle             :
+            case list_style_type_circle                 :
             {
                 painter->setBrush( Qt::NoBrush );
                 painter->setPen( c );
@@ -237,7 +248,7 @@ void qt_container::draw_list_marker( uint_ptr in_dc, const list_marker& in_marke
             }
             break;
 
-            case list_style_type_disc               :
+            case list_style_type_disc                   :
             {
                 painter->setBrush( c );
                 painter->setPen( Qt::NoPen );
@@ -245,7 +256,7 @@ void qt_container::draw_list_marker( uint_ptr in_dc, const list_marker& in_marke
             }
             break;
 
-            case list_style_type_square             :
+            case list_style_type_square                 :
             {
                 painter->setBrush( c );
                 painter->setPen( Qt::NoPen );
@@ -253,10 +264,12 @@ void qt_container::draw_list_marker( uint_ptr in_dc, const list_marker& in_marke
             }
             break;
 
+            // Other types handled by litehtml itself
             default:;
-                // Other containers do nothing, need test
         }
     }
+
+    painter->restore();
 }
 
 /**********************************************************************************************/
@@ -268,28 +281,7 @@ void qt_container::load_image( const char* in_src, const char* in_base, bool /*i
         return;
 
     QPixmap image;
-
-    if( view_ )
-    {
-        image.loadFromData( view_->loadData( url ) );
-    }
-    else if( url.isLocalFile() )
-    {
-        image.load( url.fileName() );
-    }
-    else
-    {
-        QNetworkAccessManager nm;
-        auto* const           reply = nm.get( QNetworkRequest( url ) );
-
-        QEventLoop loop;
-        connect( reply, &QNetworkReply::finished, &loop, &QEventLoop::quit );
-        loop.exec( QEventLoop::ExcludeUserInputEvents );
-
-        image.loadFromData( reply->readAll() );
-        reply->deleteLater();
-    }
-
+    image.loadFromData( load_data( url ) );
     images_.insert( url, image );
 }
 
@@ -463,6 +455,40 @@ QPixmap qt_container::render( const char* in_html, int in_width )
 
 
 /**********************************************************************************************/
+void qt_container::apply_clip( QPainter* in_painter )
+{
+    for( const auto& ipath : clips_ )
+        in_painter->setClipPath( ipath, Qt::IntersectClip );
+}
+
+/**********************************************************************************************/
+QByteArray qt_container::load_data( const QUrl& in_url )
+{
+    if( view_ )
+        return view_->loadData( in_url );
+
+    if( in_url.isLocalFile() )
+    {
+        QFile f( in_url.toLocalFile() );
+        f.open( QIODevice::ReadOnly );
+
+        return f.readAll();
+    }
+
+    if( !network_manager_ )
+        network_manager_ = std::make_unique<QNetworkAccessManager>();
+
+    auto* const reply = network_manager_->get( QNetworkRequest( in_url ) );
+
+    QEventLoop loop;
+    connect( reply, &QNetworkReply::finished, &loop, &QEventLoop::quit );
+    loop.exec( QEventLoop::ExcludeUserInputEvents );
+
+    reply->deleteLater();
+    return reply->readAll();
+}
+
+/**********************************************************************************************/
 QPixmap qt_container::loaded_image( const QString& in_src, const QString& in_base ) const
 {
     const auto url = resolve_url( in_src, in_base );
@@ -473,27 +499,45 @@ QPixmap qt_container::loaded_image( const QString& in_src, const QString& in_bas
 /**********************************************************************************************/
 QUrl qt_container::resolve_url( const QString& in_src, const QString& in_base ) const
 {
+    QString prepared_src = in_src;
+
+    // Remove quotes
+    if( prepared_src.length() > 1 && prepared_src.startsWith( '"' ) && prepared_src.endsWith( '"' ) )
+        prepared_src = prepared_src.sliced( 1, prepared_src.length() - 2 );
+    else if( prepared_src.length() > 1 && prepared_src.startsWith( '\'' ) && prepared_src.endsWith( '\'' ) )
+        prepared_src = prepared_src.sliced( 1, prepared_src.length() - 2 );
+
     // Anchor
-    QUrl src( in_src );
+    QUrl src( prepared_src );
     if( in_src.startsWith( '#' ) )
         return src;
 
-    // Net-path
-    const QUrl base( in_base.isEmpty() ? base_url_ : in_base );
-    if( in_src.startsWith( "//" ) )
-    {
-        if( in_base.isEmpty() )
-            return { "https:" + in_src };
+    QUrl base( in_base.isEmpty() ? base_url_ : in_base );
 
-        return { QUrl( in_base ).scheme() + ":" + in_src };
+    // Net-path
+    if( prepared_src.startsWith( "//" ) )
+    {
+        QString scheme = base.scheme();
+        if( scheme.isEmpty() )
+            scheme = "https:";
+
+        return { scheme + ":" + prepared_src };
     }
 
-    // Full URL with scheme
-    if( !src.scheme().isEmpty() )
+    // Invalid base or full source
+    if( !base.isValid() || !src.scheme().isEmpty() )
         return src;
 
-    // Resolve
-    return base.resolved( in_src );
+    // Absolute
+    if( prepared_src.startsWith( '/' ) )
+    {
+        base.setPath( prepared_src );
+        return base;
+    }
+
+    // Related
+    base = QUrl( base.toString() + "/" + prepared_src );
+    return base.adjusted( QUrl::FullyEncoded | QUrl::NormalizePathSegments );
 }
 
 /**********************************************************************************************/
@@ -579,36 +623,16 @@ void qt_container::import_css( std::string& out_text, const std::string& in_url,
 
     const QUrl url = resolve_url( in_url.c_str(), base );
 
-    io_base = url.toString( QUrl::None ).section( '/', 0, -2 ).toUtf8().data();
-
-    if( view_ )
-    {
-        out_text = view_->loadData( url ).data();
-    }
-    else if( url.isLocalFile() )
-    {
-        QFile f( url.toLocalFile() );
-        f.open( QIODevice::ReadOnly );
-        out_text = f.readAll().data();
-    }
-    else
-    {
-        QNetworkAccessManager nm;
-        auto* const reply = nm.get( QNetworkRequest( url ) );
-
-        QEventLoop loop;
-        connect( reply, &QNetworkReply::finished, &loop, &QEventLoop::quit );
-        loop.exec();
-
-        out_text = reply->readAll().data();
-        reply->deleteLater();
-    }
+    io_base  = url.toString( QUrl::None ).section( '/', 0, -2 ).toUtf8().data();
+    out_text = load_data( url ).data();
 }
 
 /**********************************************************************************************/
 void qt_container::set_clip( const position& in_os, const border_radiuses& in_radius )
 {
-    clips_.emplaceBack( in_os, in_radius );
+    //clips_.emplaceBack( in_os, in_radius );
+    (void) in_os;
+    (void) in_radius;
 }
 
 /**********************************************************************************************/
