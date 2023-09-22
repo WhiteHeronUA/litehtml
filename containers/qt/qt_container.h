@@ -79,12 +79,12 @@ static  QPixmap                 render( const char* in_html, int in_width );
     protected://////////////////////////////////////////////////////////////////////////
 
 virtual void                    on_error( const QString& in_msg );
+virtual QByteArray              load_data( const QUrl& in_url );
 
 
     private://////////////////////////////////////////////////////////////////////////
 
         void                    apply_clip( QPainter* in_painter );
-        QByteArray              load_data( const QUrl& in_url );
         QPixmap                 loaded_image( const QString& in_src, const QString& in_base ) const;
         QUrl                    resolve_url( const QString& in_src, const QString& in_base ) const;
 

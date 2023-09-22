@@ -11,6 +11,9 @@
 #include "qt_container.h"
 #include "qt_litehtml.h"
 
+// LITEHTML
+#include "../../include/litehtml/render_item.h"
+
 /**********************************************************************************************/
 using namespace litehtml;
 
@@ -34,6 +37,18 @@ static QString dequote( const QString& in_str )
     }
 
     return in_str;
+}
+
+/**********************************************************************************************/
+static inline QColor mix_colors( const QColor& in_a, const QColor& in_b )
+{
+    return
+    {
+        ( in_a.red()   + in_b.red() ) / 2,
+        ( in_a.green() + in_b.green() ) / 2,
+        ( in_a.blue()  + in_b.blue() ) / 2,
+        ( in_a.alpha() + in_b.alpha() ) / 2
+    };
 }
 
 /**********************************************************************************************/
@@ -458,51 +473,91 @@ void qt_container::draw_background( uint_ptr in_dc, const std::vector<background
 /**********************************************************************************************/
 void qt_container::draw_borders( uint_ptr in_dc, const borders& in_borders, const position& in_pos, bool /*in_root*/ )
 {
+    // TODO(I.N.): Implement  border_style_double, border_style_groove, border_style_ridge.
+    //             Can be implemented as drawing of two borders with thiner width and offset.
+
     auto* const painter = reinterpret_cast<QPainter*>( in_dc );
 
     painter->save();
 
     apply_clip( painter );
 
-    if( painter->renderHints() & QPainter::Antialiasing )
-        painter->translate( .5F, .5F );
-
     const auto& radius = in_borders.radius;
 
     //  /_____________\-
-    if( const auto penTop = to_qpen( in_borders.top ); penTop.style() != Qt::NoPen )
+    if( auto penTop = to_qpen( in_borders.top ); penTop.style() != Qt::NoPen )
     {
+        if( in_borders.top.style == border_style_outset )
+            penTop.setColor( mix_colors( penTop.color(), Qt::white ) );
+
         painter->setPen( penTop );
+
+        painter->save();
+
+        if( ( in_borders.top.width % 2 ) && painter->renderHints() & QPainter::Antialiasing )
+            painter->translate( .5F, .5F );
 
         painter->drawArc( in_pos.x, in_pos.y, radius.top_left_x * 2, radius.top_left_y * 2, 180 * 16, -90 * 16 );
         painter->drawLine( in_pos.x + radius.top_left_x, in_pos.y, in_pos.right() - radius.top_right_x, in_pos.y );
         painter->drawArc( in_pos.right() - radius.top_right_x * 2, in_pos.y, radius.top_right_x * 2, radius.top_right_y * 2, 90 * 16, -90 * 16 );
+
+        painter->restore();
     }
 
     //  \_____________/
-    if( const auto penBottom = to_qpen( in_borders.bottom ); penBottom.style() != Qt::NoPen )
+    if( auto penBottom = to_qpen( in_borders.bottom ); penBottom.style() != Qt::NoPen )
     {
+        if( in_borders.bottom.style == border_style_inset )
+            penBottom.setColor( mix_colors( penBottom.color().lighter(), Qt::white ) );
+
         painter->setPen( penBottom );
+
+        painter->save();
+
+        if( ( in_borders.bottom.width % 2 ) && painter->renderHints() & QPainter::Antialiasing )
+            painter->translate( .5F, .5F );
 
         painter->drawArc( in_pos.x, in_pos.bottom() - radius.bottom_left_y * 2, radius.bottom_left_x * 2, radius.bottom_left_y * 2, 270 * 16, -90 * 16 );
         painter->drawLine( in_pos.x + radius.bottom_left_x, in_pos.bottom(), in_pos.right() - radius.bottom_right_x, in_pos.bottom() );
         painter->drawArc( in_pos.right() - radius.bottom_right_x * 2, in_pos.bottom() - radius.bottom_right_y * 2, radius.bottom_right_x * 2, radius.bottom_right_y * 2, 0, -90 * 16 );
+
+        painter->restore();
     }
 
     // |
-    if( const auto penLeft = to_qpen( in_borders.left ); penLeft.style() != Qt::NoPen )
+    if( auto penLeft = to_qpen( in_borders.left ); penLeft.style() != Qt::NoPen )
     {
+        if( in_borders.left.style == border_style_outset )
+            penLeft.setColor( mix_colors( penLeft.color().lighter(), Qt::white ) );
+
         painter->setPen( penLeft );
 
+        painter->save();
+
+        if( ( in_borders.left.width % 2 ) && painter->renderHints() & QPainter::Antialiasing )
+            painter->translate( .5F, .5F );
+
         painter->drawLine( in_pos.x, in_pos.y + radius.top_left_y, in_pos.x, in_pos.bottom() - radius.bottom_left_y );
+
+        painter->restore();
     }
 
     //                  |
-    if( const auto penRight = to_qpen( in_borders.right ); penRight.style() != Qt::NoPen )
+    if( auto penRight = to_qpen( in_borders.right ); penRight.style() != Qt::NoPen )
     {
+        if( in_borders.right.style == border_style_inset )
+            penRight.setColor( mix_colors( penRight.color().lighter(), Qt::white ) );
+
         painter->setPen( penRight );
 
+        painter->save();
+
+        if( ( in_borders.right.width % 2 ) && painter->renderHints() & QPainter::Antialiasing )
+            painter->translate( .5F, .5F );
+
         painter->drawLine( in_pos.right(), in_pos.y + radius.top_right_y, in_pos.right(), in_pos.bottom() - radius.bottom_right_y );
+
+        painter->restore();
     }
 
     painter->restore();
@@ -518,7 +573,8 @@ void qt_container::set_caption( const char* in_caption )
 /**********************************************************************************************/
 void qt_container::set_base_url( const char* in_base_url )
 {
-    base_url_ = in_base_url;
+    if( *in_base_url != '#' )
+        base_url_ = in_base_url;
 }
 
 /**********************************************************************************************/
@@ -539,8 +595,6 @@ void qt_container::set_cursor( const char* in_cursor )
     if( view_ )
     {
         QCursor cr;
-
-        // TODO(I.N.): https://developer.mozilla.org/en-US/docs/Web/CSS/cursor
 
         if( !strcmp( in_cursor, "pointer" ) )
             cr = Qt::PointingHandCursor;
@@ -631,11 +685,9 @@ void qt_container::import_css( std::string& out_text, const std::string& in_url,
 }
 
 /**********************************************************************************************/
-void qt_container::set_clip( const position& in_os, const border_radiuses& in_radius )
+void qt_container::set_clip( const position& in_pos, const border_radiuses& in_radius )
 {
-    //clips_.emplaceBack( in_os, in_radius );
-    (void) in_os;
-    (void) in_radius;
+    clips_.append( to_qpath( in_pos, in_radius ) );
 }
 
 /**********************************************************************************************/
@@ -648,7 +700,16 @@ void qt_container::del_clip()
 /**********************************************************************************************/
 void qt_container::get_client_rect( position& out_client ) const
 {
-    if( paint_device_ )
+    if( view_ )
+    {
+        const auto crect = view_->clientRect();
+
+        out_client.x      = crect.x();
+        out_client.y      = crect.y();
+        out_client.width  = crect.width();
+        out_client.height = crect.height();
+    }
+    else if( paint_device_ )
     {
         out_client.x      = 0;
         out_client.y      = 0;
@@ -663,6 +724,8 @@ element::ptr qt_container::create_element(
     const string_map& /*in_attributes*/,
     const std::shared_ptr<document>& /*in_doc*/ )
 {
+    // TODO(I.N.): add dummy elements (input, textarea etc.) to fix layout?
+
     return {};
 }
 
@@ -673,8 +736,10 @@ void qt_container::get_media_features( media_features& out_media ) const
 }
 
 /**********************************************************************************************/
-void qt_container::get_language( std::string& /*out_language*/, std::string& /*out_culture*/ ) const
+void qt_container::get_language( std::string& out_language, std::string& out_culture ) const
 {
+    out_culture  = QLocale().nativeTerritoryName().toUtf8().data();
+    out_language = QLocale::languageToCode( QLocale().language() ).toUtf8().data();
 }
 
 /**********************************************************************************************/
@@ -739,9 +804,11 @@ void qt_container::apply_clip( QPainter* in_painter )
 /**********************************************************************************************/
 QByteArray qt_container::load_data( const QUrl& in_url )
 {
+    // Use view, if any
     if( view_ )
         return view_->loadData( in_url );
 
+    // Local file
     if( in_url.isLocalFile() )
     {
         QFile f( in_url.toLocalFile() );
@@ -750,6 +817,7 @@ QByteArray qt_container::load_data( const QUrl& in_url )
         return f.readAll();
     }
 
+    // Network
     QNetworkAccessManager nm;
 
     auto* const reply = nm.get( QNetworkRequest( in_url ) );
@@ -776,14 +844,18 @@ QPixmap qt_container::loaded_image( const QString& in_src, const QString& in_bas
 /**********************************************************************************************/
 QUrl qt_container::resolve_url( const QString& in_src, const QString& in_base ) const
 {
-    const QString prepared_src = dequote( in_src );
+    const QString prepared_base = dequote( in_base.isEmpty() ? base_url_ : in_base );
+    const QString prepared_src  = dequote( in_src );
 
     // Anchor
-    QUrl src( prepared_src );
-    if( in_src.startsWith( '#' ) )
-        return src;
+    if( prepared_base.startsWith( '#' ) )
+        return { prepared_base };
 
-    QUrl base( dequote( in_base.isEmpty() ? base_url_ : in_base ) );
+    if( prepared_src.startsWith( '#' ) )
+        return prepared_src;
+
+    QUrl src  ( prepared_src );
+    QUrl base ( prepared_base );
 
     // Net-path
     if( prepared_src.startsWith( "//" ) )
@@ -801,10 +873,10 @@ QUrl qt_container::resolve_url( const QString& in_src, const QString& in_base ) 
 
     // Absolute
     if( prepared_src.startsWith( '/' ) )
-        base = QUrl( base.toString( QUrl::RemovePath | QUrl::RemoveQuery ) + prepared_src );
+        base = QUrl( base.toString( QUrl::RemovePath | QUrl::RemoveQuery | QUrl::RemoveFilename | QUrl::RemoveFragment ) + prepared_src );
     // Relative
     else
-        base = QUrl( base.toString() + "/" + prepared_src );
+        base = QUrl( base.toString( QUrl::RemoveFragment | QUrl::RemoveQuery ) + "/" + prepared_src );
 
     return base.adjusted( QUrl::FullyEncoded | QUrl::NormalizePathSegments );
 }

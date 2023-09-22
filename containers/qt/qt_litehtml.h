@@ -60,6 +60,7 @@ virtual QByteArray                          loadData( const QUrl& in_url );
 
     private://////////////////////////////////////////////////////////////////////////
 
+        QRect                               clientRect() const;
         void                                render();
 
 

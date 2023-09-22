@@ -421,6 +421,17 @@ QByteArray qt_litehtml::loadData( const QUrl& in_url )
 }
 
 /**********************************************************************************************/
+QRect qt_litehtml::clientRect() const
+{
+    const auto spos  = QPoint( horizontalScrollBar()->value(), verticalScrollBar()->value() );
+    const auto vpos  = viewport()->mapFromParent( QPoint() ) / zoom_;
+    const auto dpos  = vpos + spos;
+    const auto csize = viewport()->size() / zoom_;
+
+    return { dpos, csize + QSize( 1, 1 ) };
+}
+
+/**********************************************************************************************/
 void qt_litehtml::render()
 {
     if( document_ )

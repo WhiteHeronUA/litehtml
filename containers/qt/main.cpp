@@ -9,8 +9,8 @@
 
 
 /**********************************************************************************************/
-constexpr int HTML_HEIGHT = 400;
-constexpr int HTML_WIDTH  = 600;
+constexpr int HTML_HEIGHT = 600;
+constexpr int HTML_WIDTH  = 800;
 
 /**********************************************************************************************/
 static const char* const HTML_TEXT = R"(

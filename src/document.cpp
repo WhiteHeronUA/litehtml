@@ -357,7 +357,7 @@ int litehtml::document::to_pixels( const css_length& val, int fontSize, int size
         ret = val.calc_percent(size);
         break;
     case css_units_em:
-        ret = round_f(val.val() * (float) fontSize);
+        ret = round_f(val.val() * (float) m_container->pt_to_px(fontSize));
         break;
     case css_units_pt:
         ret = m_container->pt_to_px((int) val.val());
