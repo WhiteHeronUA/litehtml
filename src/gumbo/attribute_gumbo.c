@@ -14,34 +14,37 @@
 //
 // Author: jdtang@google.com (Jonathan Tang)
 
-#include "include/gumbo/string_piece.h"
+#include "include/gumbo/attribute.h"
 
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef _WIN32
+#define strcasecmp _stricmp
+#define strncasecmp _strnicmp
+#define inline __inline
+#else // _WIN32
 #include <strings.h>
+#endif // _WIN32
 
 #include "include/gumbo/util.h"
 
 struct GumboInternalParser;
 
-const GumboStringPiece kGumboEmptyString = {NULL, 0};
-
-bool gumbo_string_equals(
-    const GumboStringPiece* str1, const GumboStringPiece* str2) {
-  return str1->length == str2->length &&
-         !memcmp(str1->data, str2->data, str1->length);
+GumboAttribute* gumbo_get_attribute(
+    const GumboVector* attributes, const char* name) {
+  for (unsigned int i = 0; i < attributes->length; ++i) {
+    GumboAttribute* attr = attributes->data[i];
+    if (!strcasecmp(attr->name, name)) {
+      return attr;
+    }
+  }
+  return NULL;
 }
 
-bool gumbo_string_equals_ignore_case(
-    const GumboStringPiece* str1, const GumboStringPiece* str2) {
-  return str1->length == str2->length &&
-         !strncasecmp(str1->data, str2->data, str1->length);
-}
-
-void gumbo_string_copy(struct GumboInternalParser* parser,
-    GumboStringPiece* dest, const GumboStringPiece* source) {
-  dest->length = source->length;
-  char* buffer = gumbo_parser_allocate(parser, source->length);
-  memcpy(buffer, source->data, source->length);
-  dest->data = buffer;
+void gumbo_destroy_attribute(
+    struct GumboInternalParser* parser, GumboAttribute* attribute) {
+  gumbo_parser_deallocate(parser, (void*) attribute->name);
+  gumbo_parser_deallocate(parser, (void*) attribute->value);
+  gumbo_parser_deallocate(parser, (void*) attribute);
 }

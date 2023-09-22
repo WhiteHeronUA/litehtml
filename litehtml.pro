@@ -82,8 +82,7 @@ HEADERS += \
     src/gumbo/include/gumbo/tokenizer_states.h \
     src/gumbo/include/gumbo/utf8.h \
     src/gumbo/include/gumbo/util.h \
-    src/gumbo/include/gumbo/vector.h \
-    src/gumbo/visualc/include/strings.h
+    src/gumbo/include/gumbo/vector.h
 
 SOURCES += \
     containers/qt/main.cpp \
@@ -118,17 +117,17 @@ SOURCES += \
     src/el_tr.cpp \
     src/element.cpp \
     src/formatting_context.cpp \
-    src/gumbo/attribute.c \
-    src/gumbo/char_ref.c \
-    src/gumbo/error.c \
-    src/gumbo/parser.c \
-    src/gumbo/string_buffer.c \
-    src/gumbo/string_piece.c \
-    src/gumbo/tag.c \
-    src/gumbo/tokenizer.c \
-    src/gumbo/utf8.c \
-    src/gumbo/util.c \
-    src/gumbo/vector.c \
+    src/gumbo/attribute_gumbo.c \
+    src/gumbo/char_ref_gumbo.c \
+    src/gumbo/error_gumbo.c \
+    src/gumbo/parser_gumbo.c \
+    src/gumbo/string_buffer_gumbo.c \
+    src/gumbo/string_piece_gumbo.c \
+    src/gumbo/tag_gumbo.c \
+    src/gumbo/tokenizer_gumbo.c \
+    src/gumbo/utf8_gumbo.c \
+    src/gumbo/util_gumbo.c \
+    src/gumbo/vector_gumbo.c \
     src/html.cpp \
     src/html_tag.cpp \
     src/iterators.cpp \

@@ -18,7 +18,14 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <strings.h>  // For strncasecmp.
+
+#ifdef _WIN32
+#define strcasecmp _stricmp
+#define strncasecmp _strnicmp
+#define inline __inline
+#else // _WIN32
+#include <strings.h>
+#endif // _WIN32
 
 #include "include/gumbo/error.h"
 #include "include/gumbo.h"
