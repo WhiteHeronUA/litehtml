@@ -48,6 +48,7 @@ class qt_litehtml : public QAbstractScrollArea
         int                                 documentMargin() const { return doc_margin_; }
         void                                setDocumentMargin( int in_margin ) { doc_margin_ = in_margin; }
 
+        QString                             html() const { return html_; }
         void                                setHtml( const QString& in_html );
 
 virtual void                                setURL( const QUrl& in_url );
@@ -78,6 +79,7 @@ virtual QByteArray                          loadData( const QUrl& in_url );
 // cached data:
 
         QHash<QUrl, QByteArray>             cache_;
+        QString                             html_;
 
 mutable std::string                         master_css_;
 mutable int                                 master_css_margin_ { -1 };

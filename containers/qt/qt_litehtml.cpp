@@ -293,10 +293,14 @@ void qt_litehtml::setDefaultFont( const QFont& in_font )
 /**********************************************************************************************/
 void qt_litehtml::setHtml( const QString& in_html )
 {
-    document_ = document::createFromString( in_html.toUtf8().data(), container_.get(), masterCSS(), default_css_.toUtf8().data() );
-    url_      = QUrl();
+    if( in_html != html_ )
+    {
+        document_ = document::createFromString( in_html.toUtf8().data(), container_.get(), masterCSS(), default_css_.toUtf8().data() );
+        html_     = in_html;
+        url_      = QUrl();
 
-    render();
+        render();
+    }
 }
 
 /**********************************************************************************************/
@@ -342,6 +346,8 @@ void qt_litehtml::setURL( const QUrl& in_url )
         const auto html = loadData( url_ );
 
         document_ = document::createFromString( html.data(), container_.get(), masterCSS(), default_css_.toUtf8().data() );
+        html_     = QString::fromUtf8( html );
+
         render();
 
         if( old )
