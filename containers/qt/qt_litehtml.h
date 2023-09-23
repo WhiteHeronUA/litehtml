@@ -42,10 +42,13 @@ class qt_litehtml : public QAbstractScrollArea
         QFont                               defaultFont() const;
         void                                setDefaultFont( const QFont& in_font );
 
-        void                                setHtml( const QString& in_html );
-
         QString                             defaultStyleSheet() const { return default_css_; }
         void                                setDefaultStyleSheet( const QString& in_css ) { default_css_ = in_css; }
+
+        int                                 documentMargin() const { return doc_margin_; }
+        void                                setDocumentMargin( int in_margin ) { doc_margin_ = in_margin; }
+
+        void                                setHtml( const QString& in_html );
 
 virtual void                                setURL( const QUrl& in_url );
         QUrl                                url() const { return url_; }
@@ -66,6 +69,7 @@ virtual QByteArray                          loadData( const QUrl& in_url );
     private://////////////////////////////////////////////////////////////////////////
 
         QRect                               clientRect() const;
+        const char*                         masterCSS() const;
         void                                render();
 
 
@@ -75,6 +79,8 @@ virtual QByteArray                          loadData( const QUrl& in_url );
 
         QHash<QUrl, QByteArray>             cache_;
 
+mutable std::string                         master_css_;
+mutable int                                 master_css_margin_ { -1 };
 
 // references:
 
@@ -85,6 +91,7 @@ virtual QByteArray                          loadData( const QUrl& in_url );
 // state:
 
         QString                             default_css_;
+        int                                 doc_margin_ { 8 };
         QUrl                                url_;
         double                              zoom_ { 1. };
 
