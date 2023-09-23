@@ -37,10 +37,15 @@ class qt_litehtml : public QAbstractScrollArea
 
 // this class API:
 
+        void                                clear() { setHtml({}); }
+
         QFont                               defaultFont() const;
         void                                setDefaultFont( const QFont& in_font );
 
-        void                                setHtml( const char* in_html );
+        void                                setHtml( const QString& in_html );
+
+        QString                             defaultStyleSheet() const { return default_css_; }
+        void                                setDefaultStyleSheet( const QString& in_css ) { default_css_ = in_css; }
 
 virtual void                                setURL( const QUrl& in_url );
         QUrl                                url() const { return url_; }
@@ -79,8 +84,9 @@ virtual QByteArray                          loadData( const QUrl& in_url );
 
 // state:
 
+        QString                             default_css_;
         QUrl                                url_;
-        double                              zoom_ { 1 };
+        double                              zoom_ { 1. };
 
 
     protected://////////////////////////////////////////////////////////////////////////
