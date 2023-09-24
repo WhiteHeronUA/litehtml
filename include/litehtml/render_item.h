@@ -24,6 +24,7 @@ namespace litehtml
         margins						                m_padding;
         margins						                m_borders;
         position					                m_pos;
+        bool                                        m_selected {};
         bool                                        m_skip;
         std::vector<std::shared_ptr<render_item>>   m_positioned;
 
@@ -172,6 +173,16 @@ namespace litehtml
         margins& get_borders()
         {
             return m_borders;
+        }
+
+        bool is_selected() const
+        {
+            return m_selected;
+        }
+
+        void set_selected(bool val)
+        {
+            m_selected = val;
         }
 
         /**

@@ -121,7 +121,23 @@ void litehtml::el_text::draw(uint_ptr hdc, int x, int y, const position *clip, c
             uint_ptr font = el_parent->css().get_font();
             if(font)
             {
-                web_color color = el_parent->css().get_color();
+                web_color color;
+
+                if(ri->is_selected())
+                {
+                    background_paint bg;
+                    bg.clip_box   = pos;
+                    bg.color      = web_color( 38, 78, 119 );
+                    bg.border_box = pos;
+                    doc->container()->draw_background( hdc, { bg } );
+
+                    color = web_color( 255, 255, 255 );
+                }
+                else
+                {
+                    color = el_parent->css().get_color();
+                }
+
                 doc->container()->draw_text(hdc, m_use_transformed ? m_transformed_text.c_str() : m_text.c_str(), font,
                                             color, pos);
             }

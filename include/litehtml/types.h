@@ -12,10 +12,10 @@ namespace litehtml
     class document;
     class element;
 
-    typedef std::map<string, string>					string_map;
+    typedef std::map<std::string, std::string>			string_map;
     typedef std::list< std::shared_ptr<element> >		elements_list;
     typedef std::vector<int>							int_vector;
-    typedef std::vector<string>							string_vector;
+    typedef std::vector<std::string>					string_vector;
 
     const unsigned int font_decoration_none			= 0x00;
     const unsigned int font_decoration_underline	= 0x01;
@@ -174,7 +174,7 @@ namespace litehtml
         font_metrics	metrics;
     };
 
-    typedef std::map<string, font_item> fonts_map;
+    typedef std::map<std::string, font_item> fonts_map;
 
     enum draw_flag
     {

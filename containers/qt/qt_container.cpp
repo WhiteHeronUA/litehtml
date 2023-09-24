@@ -381,9 +381,6 @@ void qt_container::draw_background( uint_ptr in_dc, const std::vector<background
         painter->setPen( Qt::NoPen );
 
         auto path = to_qpath( back.border_box, back.border_radius );
-        if( painter->renderHints() & QPainter::Antialiasing )
-            path.translate( .5F, .5F );
-
         painter->drawPath( path );
 
         painter->restore();
@@ -873,10 +870,21 @@ QUrl qt_container::resolve_url( const QString& in_src, const QString& in_base ) 
 
     // Absolute
     if( prepared_src.startsWith( '/' ) )
+    {
         base = QUrl( base.toString( QUrl::RemovePath | QUrl::RemoveQuery | QUrl::RemoveFilename | QUrl::RemoveFragment ) + prepared_src );
+    }
     // Relative
     else
-        base = QUrl( base.toString( QUrl::RemoveFragment | QUrl::RemoveQuery ) + "/" + prepared_src );
+    {
+        QString url = base.toString( QUrl::RemoveFragment | QUrl::RemoveQuery );
+
+        if( !url.endsWith( '/' ) && !prepared_src.startsWith( '/' ) )
+            url.append( '/' );
+
+        url.append( prepared_src );
+
+        base = QUrl( url );
+    }
 
     return base.adjusted( QUrl::FullyEncoded | QUrl::NormalizePathSegments );
 }
