@@ -766,7 +766,7 @@ typedef struct {
   int index;
 } InsertionLocation;
 
-InsertionLocation get_appropriate_insertion_location(
+static InsertionLocation get_appropriate_insertion_location(
     GumboParser* parser, GumboNode* override_target) {
   InsertionLocation retval = {override_target, -1};
   if (retval.target == NULL) {
@@ -951,7 +951,7 @@ static void clear_stack_to_table_context(GumboParser* parser) {
 }
 
 // http://www.whatwg.org/specs/web-apps/current-work/complete/tokenization.html#clear-the-stack-back-to-a-table-body-context
-void clear_stack_to_table_body_context(GumboParser* parser) {
+static void clear_stack_to_table_body_context(GumboParser* parser) {
   while (!node_tag_in_set(get_current_node(parser),
              (gumbo_tagset){TAG(HTML), TAG(TBODY), TAG(TFOOT), TAG(THEAD),
                  TAG(TEMPLATE)})) {
@@ -1173,7 +1173,7 @@ static bool is_open_element(GumboParser* parser, const GumboNode* node) {
 // Clones attributes, tags, etc. of a node, but does not copy the content.  The
 // clone shares no structure with the original node: all owned strings and
 // values are fresh copies.
-GumboNode* clone_node(
+static GumboNode* clone_node(
     GumboParser* parser, GumboNode* node, GumboParseFlags reason) {
   GumboNode* new_node = gumbo_parser_allocate(parser, sizeof(GumboNode));
   *new_node = *node;
@@ -1722,14 +1722,14 @@ static bool adoption_agency_algorithm(
     GumboNode* formatting_node = NULL;
     int formatting_node_in_open_elements = -1;
     for (int j = state->_active_formatting_elements.length; --j >= 0;) {
-      GumboNode* current_node = state->_active_formatting_elements.data[j];
-      if (current_node == &kActiveFormattingScopeMarker) {
+      GumboNode* current_node2 = state->_active_formatting_elements.data[j];
+      if (current_node2 == &kActiveFormattingScopeMarker) {
         // Last scope marker; abort the algorithm.
         return false;
       }
-      if (node_html_tag_is(current_node, subject)) {
+      if (node_html_tag_is(current_node2, subject)) {
         // Found it.
-        formatting_node = current_node;
+        formatting_node = current_node2;
         formatting_node_in_open_elements =
             gumbo_vector_index_of(&state->_open_elements, formatting_node);
         break;
@@ -1874,8 +1874,8 @@ static bool adoption_agency_algorithm(
     furthest_block->v.element.children = temp;
 
     temp = new_formatting_node->v.element.children;
-    for (unsigned int i = 0; i < temp.length; ++i) {
-      GumboNode* child = temp.data[i];
+    for (unsigned int j = 0; j < temp.length; ++j) {
+      GumboNode* child = temp.data[j];
       child->parent = new_formatting_node;
     }
 
@@ -2780,12 +2780,12 @@ static bool handle_in_body(GumboParser* parser, GumboToken* token) {
     reconstruct_active_formatting_elements(parser);
     insert_element_from_token(parser, token);
     set_frameset_not_ok(parser);
-    GumboInsertionMode state = parser->_parser_state->_insertion_mode;
-    if (state == GUMBO_INSERTION_MODE_IN_TABLE ||
-        state == GUMBO_INSERTION_MODE_IN_CAPTION ||
-        state == GUMBO_INSERTION_MODE_IN_TABLE_BODY ||
-        state == GUMBO_INSERTION_MODE_IN_ROW ||
-        state == GUMBO_INSERTION_MODE_IN_CELL) {
+    GumboInsertionMode state2 = parser->_parser_state->_insertion_mode;
+    if (state2 == GUMBO_INSERTION_MODE_IN_TABLE ||
+        state2 == GUMBO_INSERTION_MODE_IN_CAPTION ||
+        state2 == GUMBO_INSERTION_MODE_IN_TABLE_BODY ||
+        state2 == GUMBO_INSERTION_MODE_IN_ROW ||
+        state2 == GUMBO_INSERTION_MODE_IN_CELL) {
       set_insertion_mode(parser, GUMBO_INSERTION_MODE_IN_SELECT_IN_TABLE);
     } else {
       set_insertion_mode(parser, GUMBO_INSERTION_MODE_IN_SELECT);
@@ -3959,14 +3959,6 @@ GumboOutput* gumbo_parse_with_options(
   parser_state_destroy(&parser);
   gumbo_tokenizer_state_destroy(&parser);
   return parser._output;
-}
-
-void gumbo_destroy_node(GumboOptions* options, GumboNode* node) {
-  // Need a dummy GumboParser because the allocator comes along with the
-  // options object.
-  GumboParser parser;
-  parser._options = options;
-  destroy_node(&parser, node);
 }
 
 void gumbo_destroy_output(const GumboOptions* options, GumboOutput* output) {

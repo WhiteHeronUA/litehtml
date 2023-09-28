@@ -224,10 +224,10 @@ void style::add_property(string_id name, const string& val, const string& baseur
         split_string(val, tokens, " ", "", "(");
         for (const auto& token : tokens)
         {
-            int idx = value_index(token, border_style_strings);
-            if (idx >= 0)
+            int idx2 = value_index(token, border_style_strings);
+            if (idx2 >= 0)
             {
-                property_value style(idx, important);
+                property_value style(idx2, important);
                 add_parsed_property(_border_left_style_,	style);
                 add_parsed_property(_border_right_style_,	style);
                 add_parsed_property(_border_top_style_,		style);
@@ -264,10 +264,10 @@ void style::add_property(string_id name, const string& val, const string& baseur
         split_string(val, tokens, " ", "", "(");
         for (const auto& token : tokens)
         {
-            int idx = value_index(token, border_style_strings);
-            if (idx >= 0)
+            int idx2 = value_index(token, border_style_strings);
+            if (idx2 >= 0)
             {
-                add_parsed_property(_id(_s(name) + "-style"), property_value(idx, important));
+                add_parsed_property(_id(_s(name) + "-style"), property_value(idx2, important));
             }
             else if (t_isdigit(token[0]) || token[0] == '.' ||
                 value_in_list(token, border_width_strings))
@@ -433,17 +433,17 @@ void style::add_property(string_id name, const string& val, const string& baseur
         split_string(val, tokens, " ", "", "(");
         for (const auto& token : tokens)
         {
-            int idx = value_index(token, list_style_type_strings);
-            if (idx >= 0)
+            int idx2 = value_index(token, list_style_type_strings);
+            if (idx2 >= 0)
             {
-                add_parsed_property(_list_style_type_, property_value(idx, important));
+                add_parsed_property(_list_style_type_, property_value(idx2, important));
             }
             else
             {
-                idx = value_index(token, list_style_position_strings);
-                if (idx >= 0)
+                idx2 = value_index(token, list_style_position_strings);
+                if (idx2 >= 0)
                 {
-                    add_parsed_property(_list_style_position_, property_value(idx, important));
+                    add_parsed_property(_list_style_position_, property_value(idx2, important));
                 }
                 else if (!strncmp(token.c_str(), "url", 3))
                 {
@@ -508,14 +508,14 @@ void style::add_property(string_id name, const string& val, const string& baseur
         split_string(val, tokens, " ");
         for (const auto& tok : tokens)
         {
-            int idx;
-            if ((idx = value_index(tok, flex_direction_strings)) >= 0)
+            int idx2;
+            if ((idx2 = value_index(tok, flex_direction_strings)) >= 0)
             {
-                add_parsed_property(_flex_direction_, property_value(idx, important));
+                add_parsed_property(_flex_direction_, property_value(idx2, important));
             }
-            else if ((idx = value_index(tok, flex_wrap_strings)) >= 0)
+            else if ((idx2 = value_index(tok, flex_wrap_strings)) >= 0)
             {
-                add_parsed_property(_flex_wrap_, property_value(idx, important));
+                add_parsed_property(_flex_wrap_, property_value(idx2, important));
             }
         }
         break;
@@ -714,15 +714,15 @@ bool style::parse_one_background(const string& val, document_container* containe
 
     if (position != "")
     {
-        string_vector tokens;
-        split_string(position, tokens, "/");
+        string_vector tokens2;
+        split_string(position, tokens2, "/");
 
-        if (tokens.size() > 2) return false;
+        if (tokens2.size() > 2) return false;
 
-        if (tokens.size() == 2 && !parse_one_background_size(tokens[1], bg.m_size[0]))
+        if (tokens2.size() == 2 && !parse_one_background_size(tokens2[1], bg.m_size[0]))
             return false;
 
-        if (tokens.size() > 0 && !parse_one_background_position(tokens[0], bg.m_position_x[0], bg.m_position_y[0]))
+        if (tokens2.size() > 0 && !parse_one_background_position(tokens2[0], bg.m_position_x[0], bg.m_position_y[0]))
             return false;
     }
 

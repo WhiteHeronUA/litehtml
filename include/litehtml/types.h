@@ -108,10 +108,10 @@ namespace litehtml
             height	= sz.height;
         }
 
-        void move_to(int x, int y)
+        void move_to(int in_x, int in_y)
         {
-            this->x = x;
-            this->y = y;
+            this->x = in_x;
+            this->y = in_y;
         }
 
         bool does_intersect(const position* val) const
@@ -139,9 +139,9 @@ namespace litehtml
             return false;
         }
 
-        bool is_point_inside(int x, int y) const
+        bool is_point_inside(int in_x, int in_y) const
         {
-            if(x >= left() && x <= right() && y >= top() && y <= bottom())
+            if(in_x >= left() && in_x <= right() && in_y >= top() && in_y <= bottom())
             {
                 return true;
             }
