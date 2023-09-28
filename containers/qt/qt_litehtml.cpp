@@ -270,7 +270,7 @@ void qt_litehtml::mousePressEvent( QMouseEvent* in_event )
 /**********************************************************************************************/
 void qt_litehtml::mouseReleaseEvent( QMouseEvent* in_event )
 {
-    if( document_ )
+    if( const auto doc = document_ )
     {
         if( in_event->button() == Qt::LeftButton )
         {
@@ -279,7 +279,7 @@ void qt_litehtml::mouseReleaseEvent( QMouseEvent* in_event )
             const auto dpos = vpos + spos;
 
             position::vector redraw;
-            document_->on_lbutton_up( dpos.x(), dpos.y(), dpos.x(), dpos.y(), redraw );
+            doc->on_lbutton_up( dpos.x(), dpos.y(), dpos.x(), dpos.y(), redraw );
 
             updateSelection( selection_start_, dpos );
 
