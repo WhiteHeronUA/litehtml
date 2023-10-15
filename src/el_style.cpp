@@ -1,6 +1,6 @@
 #include "../include/litehtml/html.h"
 #include "../include/litehtml/el_style.h"
-#include "../include/litehtml/document.h"
+#include "../include/litehtml/document_litehtml.h"
 
 
 litehtml::el_style::el_style(const std::shared_ptr<document>& doc) : element(doc)

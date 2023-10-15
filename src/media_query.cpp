@@ -1,6 +1,6 @@
 #include "../include/litehtml/html.h"
 #include "../include/litehtml/media_query.h"
-#include "../include/litehtml/document.h"
+#include "../include/litehtml/document_litehtml.h"
 
 
 litehtml::media_query::media_query()

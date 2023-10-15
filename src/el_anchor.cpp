@@ -1,6 +1,6 @@
 #include "../include/litehtml/html.h"
 #include "../include/litehtml/el_anchor.h"
-#include "../include/litehtml/document.h"
+#include "../include/litehtml/document_litehtml.h"
 
 litehtml::el_anchor::el_anchor(const std::shared_ptr<litehtml::document>& doc) : html_tag(doc)
 {

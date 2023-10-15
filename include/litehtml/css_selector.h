@@ -1,7 +1,7 @@
 #ifndef LH_CSS_SELECTOR_H
 #define LH_CSS_SELECTOR_H
 
-#include "style.h"
+#include "style_litehtml.h"
 #include "media_query.h"
 
 namespace litehtml

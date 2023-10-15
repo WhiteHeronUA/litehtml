@@ -1,5 +1,5 @@
 #include "../include/litehtml/html.h"
-#include "../include/litehtml/style.h"
+#include "../include/litehtml/style_litehtml.h"
 
 namespace litehtml
 {

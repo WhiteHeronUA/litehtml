@@ -2,7 +2,7 @@
 #include "../include/litehtml/render_block.h"
 #include "../include/litehtml/render_inline_context.h"
 #include "../include/litehtml/render_block_context.h"
-#include "../include/litehtml/document.h"
+#include "../include/litehtml/document_litehtml.h"
 
 int litehtml::render_item_block::place_float(const std::shared_ptr<render_item> &el, int top, const containing_block_context &self_size, formatting_context* fmt_ctx)
 {

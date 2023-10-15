@@ -1,6 +1,6 @@
 #include "../include/litehtml/html.h"
 #include "../include/litehtml/render_block_context.h"
-#include "../include/litehtml/document.h"
+#include "../include/litehtml/document_litehtml.h"
 
 int litehtml::render_item_block_context::_render_content(int /*x*/, int /*y*/, bool second_pass, const containing_block_context &self_size, formatting_context* fmt_ctx)
 {

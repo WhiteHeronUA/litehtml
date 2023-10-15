@@ -1,6 +1,6 @@
 #include "../include/litehtml/html.h"
 #include "../include/litehtml/css_selector.h"
-#include "../include/litehtml/document.h"
+#include "../include/litehtml/document_litehtml.h"
 
 void litehtml::css_element_selector::parse_nth_child_params(const string& param, int& num, int& off)
 {

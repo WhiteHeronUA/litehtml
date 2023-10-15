@@ -2,7 +2,7 @@
 #define LH_HTML_TAG_H
 
 #include "element.h"
-#include "style.h"
+#include "style_litehtml.h"
 #include "background.h"
 #include "css_margins.h"
 #include "borders.h"

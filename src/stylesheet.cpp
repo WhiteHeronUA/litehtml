@@ -1,7 +1,7 @@
 #include "../include/litehtml/html.h"
 #include "../include/litehtml/stylesheet.h"
 #include <algorithm>
-#include "../include/litehtml/document.h"
+#include "../include/litehtml/document_litehtml.h"
 
 
 void litehtml::css::parse_stylesheet(const char* str, const char* baseurl, const std::shared_ptr<document>& doc, const media_query_list::ptr& media)

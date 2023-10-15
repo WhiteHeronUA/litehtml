@@ -1,6 +1,6 @@
 #include "../include/litehtml/html.h"
 #include "../include/litehtml/el_table.h"
-#include "../include/litehtml/document.h"
+#include "../include/litehtml/document_litehtml.h"
 #include "../include/litehtml/iterators.h"
 
 

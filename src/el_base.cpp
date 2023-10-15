@@ -1,6 +1,6 @@
 #include "../include/litehtml/html.h"
 #include "../include/litehtml/el_base.h"
-#include "../include/litehtml/document.h"
+#include "../include/litehtml/document_litehtml.h"
 
 litehtml::el_base::el_base(const std::shared_ptr<document>& doc) : html_tag(doc)
 {

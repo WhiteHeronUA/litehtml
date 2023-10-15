@@ -1,7 +1,7 @@
 #ifndef LH_DOCUMENT_H
 #define LH_DOCUMENT_H
 
-#include "style.h"
+#include "style_litehtml.h"
 #include "types.h"
 #include "master_css.h"
 

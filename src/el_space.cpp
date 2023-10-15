@@ -1,5 +1,5 @@
 #include "../include/litehtml/html.h"
-#include "../include/litehtml/document.h"
+#include "../include/litehtml/document_litehtml.h"
 #include "../include/litehtml/el_space.h"
 
 litehtml::el_space::el_space(const char* text, const std::shared_ptr<document>& doc) : el_text(text, doc)

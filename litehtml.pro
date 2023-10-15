@@ -18,8 +18,8 @@ HEADERS += \
     include/litehtml/css_position.h \
     include/litehtml/css_properties.h \
     include/litehtml/css_selector.h \
-    include/litehtml/document.h \
     include/litehtml/document_container.h \
+    include/litehtml/document_litehtml.h \
     include/litehtml/el_anchor.h \
     include/litehtml/el_base.h \
     include/litehtml/el_before_after.h \
@@ -59,7 +59,7 @@ HEADERS += \
     include/litehtml/render_item.h \
     include/litehtml/render_table.h \
     include/litehtml/string_id.h \
-    include/litehtml/style.h \
+    include/litehtml/style_litehtml.h \
     include/litehtml/stylesheet.h \
     include/litehtml/table.h \
     include/litehtml/tstring_view.h \

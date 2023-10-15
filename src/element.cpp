@@ -1,6 +1,6 @@
 #include "../include/litehtml/html.h"
 #include "../include/litehtml/element.h"
-#include "../include/litehtml/document.h"
+#include "../include/litehtml/document_litehtml.h"
 #include "../include/litehtml/render_item.h"
 #include "../include/litehtml/render_flex.h"
 #include "../include/litehtml/render_inline.h"

@@ -1,5 +1,5 @@
 #include "../include/litehtml/html.h"
-#include "../include/litehtml/document.h"
+#include "../include/litehtml/document_litehtml.h"
 #include "../include/litehtml/stylesheet.h"
 #include "../include/litehtml/html_tag.h"
 #include "../include/litehtml/el_text.h"

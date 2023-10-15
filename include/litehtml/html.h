@@ -19,7 +19,7 @@
 #include "media_query.h"
 #include "html_tag.h"
 #include "document_container.h"
-#include "document.h"
+#include "document_litehtml.h"
 
 namespace litehtml
 {
