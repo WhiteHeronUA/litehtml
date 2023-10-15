@@ -102,7 +102,7 @@ void litehtml::css_properties::compute(const element* el, const document::ptr& d
     // 5. Otherwise, the remaining 'display' property values apply as specified.
 
     const css_length _auto = css_length::predef_value(0);
-    const css_length none = _auto, normal = _auto;
+    const css_length _none = _auto, normal = _auto;
 
     m_css_width      = el->get_length_property(_width_,      false, _auto, offset(m_css_width));
     m_css_height     = el->get_length_property(_height_,     false, _auto, offset(m_css_height));
@@ -110,8 +110,8 @@ void litehtml::css_properties::compute(const element* el, const document::ptr& d
     m_css_min_width  = el->get_length_property(_min_width_,  false, _auto, offset(m_css_min_width));
     m_css_min_height = el->get_length_property(_min_height_, false, _auto, offset(m_css_min_height));
 
-    m_css_max_width  = el->get_length_property(_max_width_,  false, none, offset(m_css_max_width));
-    m_css_max_height = el->get_length_property(_max_height_, false, none, offset(m_css_max_height));
+    m_css_max_width  = el->get_length_property(_max_width_,  false, _none, offset(m_css_max_width));
+    m_css_max_height = el->get_length_property(_max_height_, false, _none, offset(m_css_max_height));
 
     doc->cvt_units(m_css_width, font_size);
     doc->cvt_units(m_css_height, font_size);

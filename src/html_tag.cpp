@@ -1028,10 +1028,10 @@ bool litehtml::html_tag::set_pseudo_class( string_id cls, bool add )
         }
     } else
     {
-        auto pi = std::find(m_pseudo_classes.begin(), m_pseudo_classes.end(), cls);
-        if(pi != m_pseudo_classes.end())
+        auto pit = std::find(m_pseudo_classes.begin(), m_pseudo_classes.end(), cls);
+        if(pit != m_pseudo_classes.end())
         {
-            m_pseudo_classes.erase(pi);
+            m_pseudo_classes.erase(pit);
             ret = true;
         }
     }
