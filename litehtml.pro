@@ -96,8 +96,8 @@ SOURCES += \
     src/css_length.cpp \
     src/css_properties.cpp \
     src/css_selector.cpp \
-    src/document.cpp \
     src/document_container.cpp \
+    src/document_litehtml.cpp \
     src/el_anchor.cpp \
     src/el_base.cpp \
     src/el_before_after.cpp \
@@ -146,7 +146,7 @@ SOURCES += \
     src/render_table.cpp \
     src/string_id.cpp \
     src/strtod.cpp \
-    src/style.cpp \
+    src/style_litehtml.cpp \
     src/stylesheet.cpp \
     src/table.cpp \
     src/tstring_view.cpp \
