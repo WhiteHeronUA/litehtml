@@ -2,6 +2,9 @@ CONFIG   += c++20 staticlib
 QT       += network widgets
 TEMPLATE  = app
 
+QMAKE_CFLAGS += -Wshadow -Wall -Wextra -Wmissing-prototypes
+QMAKE_CXXFLAGS += -Wshadow -Wall -Wextra
+
 HEADERS += \
     containers/qt/qt_container.h \
     containers/qt/qt_litehtml.h \

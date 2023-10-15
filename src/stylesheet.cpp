@@ -8,14 +8,19 @@ void litehtml::css::parse_stylesheet(const char* str, const char* baseurl, const
 {
     string text = str;
 
-    // remove comments
-    string::size_type c_start = text.find("/*");
-    while(c_start != string::npos)
-    {
-        string::size_type c_end = text.find("*/", c_start + 2);
-        text.erase(c_start, c_end - c_start + 2);
-        c_start = text.find("/*");
-    }
+	// remove comments
+	string::size_type c_start = text.find("/*");
+	while(c_start != string::npos)
+	{
+		string::size_type c_end = text.find("*/", c_start + 2);
+		if(c_end == string::npos)
+		{
+			text.erase(c_start);
+			break;
+		}
+		text.erase(c_start, c_end - c_start + 2);
+		c_start = text.find("/*");
+	}
 
     string::size_type pos = text.find_first_not_of(" \n\r\t");
     while(pos != string::npos)
